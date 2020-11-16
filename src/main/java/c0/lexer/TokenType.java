@@ -1,0 +1,11 @@
+package c0.lexer;
+
+public enum TokenType {
+    LET, CONST, AS, RETURN,
+    UINT_LITERAL, STRING_LITERAL, CHAR_LITERAL,
+    IDENT,
+    PLUS, MINUS, MUL, DIV,
+    ASSIGN, EQ, NEQ, LT, GT, LE, GE,
+    L_PAREN, R_PAREN, L_BRACE, R_BRACE,
+    ARROW, COMMA, COLON, SEMICOLON
+}
