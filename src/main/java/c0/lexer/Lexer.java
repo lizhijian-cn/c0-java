@@ -1,72 +1,83 @@
 package c0.lexer;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import c0.RichIterator;
 
-public class Lexer implements Iterator<Token> {
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
+
+public class Lexer implements RichIterator<Token> {
     CharInterator charIter;
+
+    LinkedHashMap<Predicate<Character>, Supplier<Token>> actions;
+
+    public Lexer(CharInterator charIter) {
+        this.charIter = charIter;
+        actions = new LinkedHashMap<>(Map.of(
+                Character::isWhitespace, this::skipSpace,
+                this::isUnderlineOrLetter, this::lexIdentOrKeyword,
+                Character::isDigit, this::lexUInt,
+                ch -> ch.equals('"'), this::lexString,
+                ch -> ch.equals('\''), this::lexChar,
+                this::isOperator, this::lexOperator
+                // TODO lexComment
+        ));
+    }
+
+    @Override
+    public Token peek() {
+        // TODO peek
+        return null;
+    }
 
     @Override
     public Token next() {
         if (!charIter.hasNext()) {
             return new Token(TokenType.EOF);
         }
-        var nextChar = charIter.peek();
-        if (Character.isWhitespace(nextChar)) {
-            return skipSpace();
-        }
-        if (isUnderlineOrLetterOrDigit(nextChar)) {
-            return lexIdentOrKeyword();
-        }
-        if (Character.isDigit(nextChar)) {
-            return lexUInt();
-        }
-        if (nextChar == '"') {
-            return lexString();
-        }
-        if (nextChar == '\'') {
-            return lexChar();
-        }
-        if (nextChar == '/') {
-            // TODO lexComment
-        }
-        if (isOperator(nextChar)) {
-            return lexOperator();
+        for (var action : actions.entrySet()) {
+            if (charIter.check(action.getKey())) {
+                return action.getValue().get();
+            }
         }
         throw new RuntimeException("unrecognized character");
     }
 
     @Override
     public boolean hasNext() {
+        // TODO hasNext
         return false;
     }
 
     Token skipSpace() {
-        while (charIter.test(Character::isWhitespace).isPresent()) {
-            continue;
+        while (charIter.check(Character::isWhitespace)) {
+            charIter.next();
         }
         return next();
     }
 
+    boolean isUnderlineOrLetter(Character ch) {
+        return Character.isLetter(ch) || ch == '_';
+    }
+
     boolean isUnderlineOrLetterOrDigit(Character ch) {
-        return Character.isLetterOrDigit(ch) || ch == '_';
+        return Character.isDigit(ch) || isUnderlineOrLetter(ch);
     }
 
     Token lexIdentOrKeyword() {
         var sb = new StringBuilder();
-        while (true) {
-            var op = charIter.test(this::isUnderlineOrLetterOrDigit);
-            if (op.isEmpty()) {
-                break;
-            }
-            sb.append(op.get());
+        while (charIter.check(this::isUnderlineOrLetterOrDigit)) {
+            sb.append(charIter.next());
         }
         var value = sb.toString();
         return switch (value) {
             case "let" -> new Token(TokenType.LET);
             case "const" -> new Token(TokenType.CONST);
             case "as" -> new Token(TokenType.AS);
+            case "fn" -> new Token(TokenType.FN);
             case "return" -> new Token(TokenType.RETURN);
             default -> new Token(TokenType.IDENT, value);
         };
@@ -74,12 +85,8 @@ public class Lexer implements Iterator<Token> {
 
     Token lexUInt() {
         var sb = new StringBuilder();
-        while (true) {
-            var op = charIter.test(Character::isDigit);
-            if (op.isEmpty()) {
-                break;
-            }
-            sb.append(op.get());
+        while (charIter.check(Character::isDigit)) {
+            sb.append(charIter.next());
         }
         return new Token(TokenType.UINT_LITERAL, Integer.parseUnsignedInt(sb.toString()));
     }
@@ -88,30 +95,26 @@ public class Lexer implements Iterator<Token> {
         if (!charIter.hasNext()) {
             return Optional.empty();
         }
-        var nextChar = charIter.peek();
-        if (nextChar == '"') {
+        if (charIter.check('"')) {
             return Optional.empty();
         }
-
-        return switch (nextChar) {
-            case '\\' -> {
-                charIter.next();
-                if (!charIter.hasNext()) {
-                    throw new RuntimeException("lack of special character");
-                }
-                yield switch (charIter.next()) {
-                    case '\\' -> Optional.of('\\');
-                    case '"' -> Optional.of('"');
-                    case '\'' -> Optional.of('\'');
-                    case 'n' -> Optional.of('\n');
-                    case 'r' -> Optional.of('\r');
-                    case 't' -> Optional.of('\t');
-                    default -> throw new RuntimeException("Unrecognised Character");
-                };
+        if (charIter.test('\\')) {
+            if (!charIter.hasNext()) {
+                throw new RuntimeException("lack of special character");
             }
-            default -> Optional.of(charIter.next());
-        };
+            return switch (charIter.next()) {
+                case '\\' -> Optional.of('\\');
+                case '"' -> Optional.of('"');
+                case '\'' -> Optional.of('\'');
+                case 'n' -> Optional.of('\n');
+                case 'r' -> Optional.of('\r');
+                case 't' -> Optional.of('\t');
+                default -> throw new RuntimeException("Unrecognised Character");
+            };
+        }
+        return Optional.of(charIter.next());
     }
+
     Token lexString() {
         var sb = new StringBuilder();
         charIter.expect('"');

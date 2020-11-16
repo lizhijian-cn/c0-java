@@ -7,25 +7,30 @@ import java.util.function.Predicate;
 public interface RichIterator<T> extends Iterator<T> {
     T peek();
 
-    default T expect(T e) {
-        if (test(e)) {
-            return e;
+    default <E> T expect(E e) {
+        if (check(e)) {
+            return next();
         }
         throw new RuntimeException(
                 String.format("expect %s, but get %s", e.toString(), hasNext() ? peek().toString() : "nothing"));
     }
 
-    default boolean test(T e) {
-        return test(x -> x.equals(e)).isPresent();
+    default <E> boolean check(E e) {
+        return check(x -> x.equals(e));
     }
 
-    default Optional<T> test(Predicate<T> p) {
+    default boolean check(Predicate<T> p) {
         if (!hasNext()) {
-            return Optional.empty();
+            return false;
         }
-        if (p.test(peek())) {
-            return Optional.of(next());
+        return p.test(peek());
+    }
+
+    default <E> boolean test(E e) {
+        boolean res = check(e);
+        if (res) {
+            next();
         }
-        return Optional.empty();
+        return res;
     }
 }

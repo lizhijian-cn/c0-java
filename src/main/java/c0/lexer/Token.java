@@ -16,6 +16,10 @@ public class Token {
         this.value = value;
     }
 
+    public boolean equals(TokenType e) {
+        return tokenType == e;
+    }
+
     public String getString() {
         if (value instanceof String string) {
             return string;
