@@ -1,6 +1,7 @@
 package c0.lexer;
 
 public enum TokenType {
+    EOF,
     LET, CONST, AS, RETURN,
     UINT_LITERAL, STRING_LITERAL, CHAR_LITERAL,
     IDENT,
