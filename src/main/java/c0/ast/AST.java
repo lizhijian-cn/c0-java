@@ -7,7 +7,7 @@ import java.util.List;
 
 
 public class AST extends AbstractNode {
-    List<DeclNode> decls;
+    List<Entity> entities;
 
     public AST() {
         this.entities = new ArrayList<>();
