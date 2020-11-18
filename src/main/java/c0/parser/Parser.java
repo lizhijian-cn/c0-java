@@ -4,6 +4,10 @@ import c0.ast.AST;
 import c0.ast.expr.ExprNode;
 import c0.ast.expr.LiteralNode;
 import c0.ast.stmt.BlockNode;
+import c0.ast.stmt.DeclStmtNode;
+import c0.ast.stmt.ReturnNode;
+import c0.ast.stmt.StmtNode;
+import c0.entity.Entity;
 import c0.entity.Function;
 import c0.entity.Variable;
 import c0.lexer.Lexer;
@@ -26,14 +30,13 @@ public class Parser {
 
     AST parseProgram() {
         var ast = new AST();
-        while (true) {
-            if (lexer.check(TokenType.FN)) {
-                ast.addEntity(parseFunction());
-            } else if (lexer.check(TokenType.LET) || lexer.check(TokenType.CONST)) {
-                ast.addEntity(parseVariable());
-            } else {
-                break;
-            }
+        boolean exit = false;
+        while (!exit) {
+            switch (lexer.peek().getTokenType()) {
+                case FN -> ast.addEntity(parseFunction());
+                case LET, CONST -> ast.addEntity(parseVariable());
+                default -> exit = true;
+            };
         }
         lexer.expect(TokenType.EOF);
         return ast;
@@ -84,9 +87,47 @@ public class Parser {
     ExprNode parseExpr() {
         return exprParser.parse();
     }
+
     BlockNode parseBlockStmt() {
-        return null;
+        lexer.expect(TokenType.L_PAREN);
+
+        var stmts = new ArrayList<StmtNode>();
+        boolean exit = false;
+        while (!exit) {
+            switch (lexer.peek().getTokenType()) {
+                case SEMICOLON -> lexer.next();
+                case LET, CONST -> stmts.add(parseDeclStmt());
+                case L_PAREN -> stmts.add(parseBlockStmt());
+                case RETURN -> stmts.add(parseReturnStmt());
+                case EOF -> exit = true;
+                default -> parseExprStmt();
+            }
+        }
+        lexer.expect(TokenType.R_PAREN);
+        return new BlockNode(stmts);
     }
 
+    DeclStmtNode parseDeclStmt() {
+        var variable = parseVariable();
+        return new DeclStmtNode(variable.getName(), variable);
+    }
 
+    ReturnNode parseReturnStmt() {
+        lexer.expect(TokenType.RETURN);
+        ExprNode returnValue = null;
+        if (!lexer.test(TokenType.SEMICOLON)) {
+            returnValue = parseExpr();
+            lexer.expect(TokenType.SEMICOLON);
+        }
+        return new ReturnNode(returnValue);
+    }
+
+    // TODO try to parse expr statement, if success, drop it, otherwise, throw a exception
+    ExprNode parseExprStmt() {
+        ExprNode expr = parseExpr();
+        lexer.expect(TokenType.SEMICOLON);
+        return expr;
+    }
+
+    // TODO if & while & break & continue statement
 }

@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+@Deprecated
 public class ExprOPG {
     Lexer lexer;
     ArrayList<TokenType> vtSet;

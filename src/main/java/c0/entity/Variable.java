@@ -15,4 +15,8 @@ public class Variable extends Entity {
         this.expr = expr;
         this.isConst = isConst;
     }
+
+    public String getName() {
+        return name;
+    }
 }

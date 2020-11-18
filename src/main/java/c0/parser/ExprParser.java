@@ -10,11 +10,13 @@ import java.util.List;
 
 public class ExprParser {
     Lexer lexer;
+
     public ExprParser(Lexer lexer) {
         this.lexer = lexer;
     }
 
     /**
+     * OPG
      * A -> i = A | B
      * B -> B < C | B > C | B <= C | B >= C | B == C | B != C | C
      * C -> C + D | C - D | D
@@ -24,8 +26,8 @@ public class ExprParser {
      * G -> id() | id(H) | I
      * H -> A, H | A
      * I -> (A) | id | literal
-     */
-    /**
+     *
+     * removing left recursion
      * A -> i = A | B
      * B -> C { < C | > C | <= C | >= C | == C | != C }
      * C -> D { + D | - D }
@@ -110,7 +112,7 @@ public class ExprParser {
                 return new FunctionCallNode(funcName, args);
             }
             args.add(a());
-            while (lexer.test(TokenType.COLON)) {
+            while (lexer.test(TokenType.COMMA)) {
                 args.add(a());
             }
             return new FunctionCallNode(funcName, args);
