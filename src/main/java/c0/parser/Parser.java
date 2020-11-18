@@ -14,11 +14,11 @@ import java.util.ArrayList;
 
 public class Parser {
     Lexer lexer;
-    ExprOPG exprOPG;
+    ExprParser exprParser;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
-        this.exprOPG = new ExprOPG(lexer);
+        this.exprParser = new ExprParser(lexer);
     }
     public AST parse() {
         return parseProgram();
@@ -82,7 +82,7 @@ public class Parser {
     }
 
     ExprNode parseExpr() {
-        return exprOPG.parseExpr();
+        return exprParser.parse();
     }
     BlockNode parseBlockStmt() {
         return null;

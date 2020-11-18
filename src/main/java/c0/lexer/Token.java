@@ -20,6 +20,10 @@ public class Token {
         return tokenType == e;
     }
 
+    public TokenType getTokenType() {
+        return tokenType;
+    }
+
     public String getString() {
         if (value instanceof String string) {
             return string;
@@ -39,6 +43,14 @@ public class Token {
     public int getUInt() {
         if (value instanceof Integer i) {
             return i;
+        } else {
+            throw new RuntimeException("token type is not UINT");
+        }
+    }
+
+    public double getDouble() {
+        if (value instanceof Double d) {
+            return d;
         } else {
             throw new RuntimeException("token type is not UINT");
         }

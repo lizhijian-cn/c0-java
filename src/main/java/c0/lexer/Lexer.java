@@ -1,6 +1,7 @@
 package c0.lexer;
 
 import c0.RichIterator;
+import c0.error.UnreachableException;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -181,7 +182,7 @@ public class Lexer implements RichIterator<Token> {
             case ',' -> new Token(TokenType.COMMA);
             case ':' -> new Token(TokenType.COLON);
             case ';' -> new Token(TokenType.SEMICOLON);
-            default -> throw new RuntimeException("unrecognized character");
+            default -> throw new UnreachableException();
         };
     }
 }
