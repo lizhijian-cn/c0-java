@@ -2,7 +2,10 @@ package c0.entity;
 
 import c0.ast.expr.ExprNode;
 import c0.type.Type;
+import c0.visitor.Visitor;
+import lombok.Getter;
 
+@Getter
 public class Variable extends Entity {
     Type type;
     ExprNode expr;
@@ -16,7 +19,8 @@ public class Variable extends Entity {
         this.isConst = isConst;
     }
 
-    public String getName() {
-        return name;
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

@@ -3,9 +3,12 @@ package c0.entity;
 import c0.ast.stmt.BlockNode;
 import c0.ast.stmt.StmtNode;
 import c0.type.Type;
+import c0.visitor.Visitor;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 public class Function extends Entity {
     List<Variable> args;
     Type returnType;
@@ -18,4 +21,8 @@ public class Function extends Entity {
         this.blockStmt = blockStmt;
     }
 
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
+    }
 }

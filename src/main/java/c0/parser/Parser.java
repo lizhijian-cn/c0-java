@@ -3,11 +3,7 @@ package c0.parser;
 import c0.ast.AST;
 import c0.ast.expr.ExprNode;
 import c0.ast.expr.LiteralNode;
-import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.DeclStmtNode;
-import c0.ast.stmt.ReturnNode;
-import c0.ast.stmt.StmtNode;
-import c0.entity.Entity;
+import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
 import c0.lexer.Lexer;
@@ -67,7 +63,7 @@ public class Parser {
             name = lexer.expect(TokenType.IDENT).getString();
             lexer.expect(TokenType.COLON);
             type = new Type(lexer.expect(TokenType.IDENT).getString());
-            lexer.expect(TokenType.EQ);
+            lexer.expect(TokenType.ASSIGN);
             expr = parseExpr();
         } else {
             isConst = false;
@@ -75,12 +71,13 @@ public class Parser {
             name = lexer.expect(TokenType.IDENT).getString();
             lexer.expect(TokenType.COLON);
             type = new Type(lexer.expect(TokenType.IDENT).getString());
-            if (lexer.test(TokenType.EQ)) {
+            if (lexer.test(TokenType.ASSIGN)) {
                 expr = parseExpr();
             } else {
                 expr = LiteralNode.defaultValue(type);
             }
         }
+        lexer.expect(TokenType.SEMICOLON);
         return new Variable(name, type, expr, isConst);
     }
 
@@ -89,21 +86,24 @@ public class Parser {
     }
 
     BlockNode parseBlockStmt() {
-        lexer.expect(TokenType.L_PAREN);
+        lexer.expect(TokenType.L_BRACE);
 
         var stmts = new ArrayList<StmtNode>();
         boolean exit = false;
         while (!exit) {
             switch (lexer.peek().getTokenType()) {
-                case SEMICOLON -> lexer.next();
+                case SEMICOLON -> {
+                    lexer.next();
+                    stmts.add(new EmptyNode());
+                }
                 case LET, CONST -> stmts.add(parseDeclStmt());
                 case L_PAREN -> stmts.add(parseBlockStmt());
                 case RETURN -> stmts.add(parseReturnStmt());
-                case EOF -> exit = true;
-                default -> parseExprStmt();
+                case R_BRACE, EOF -> exit = true;
+                default -> stmts.add(parseExprStmt());
             }
         }
-        lexer.expect(TokenType.R_PAREN);
+        lexer.expect(TokenType.R_BRACE);
         return new BlockNode(stmts);
     }
 
@@ -123,10 +123,10 @@ public class Parser {
     }
 
     // TODO try to parse expr statement, if success, drop it, otherwise, throw a exception
-    ExprNode parseExprStmt() {
+    ExprStmtNode parseExprStmt() {
         ExprNode expr = parseExpr();
         lexer.expect(TokenType.SEMICOLON);
-        return expr;
+        return new ExprStmtNode(expr);
     }
 
     // TODO if & while & break & continue statement

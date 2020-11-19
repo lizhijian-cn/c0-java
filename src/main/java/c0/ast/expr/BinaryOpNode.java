@@ -2,7 +2,10 @@ package c0.ast.expr;
 
 import c0.error.UnreachableException;
 import c0.lexer.TokenType;
+import c0.visitor.Visitor;
+import lombok.Getter;
 
+@Getter
 public class BinaryOpNode extends ExprNode {
     ExprNode left;
     OpVal op;
@@ -24,5 +27,10 @@ public class BinaryOpNode extends ExprNode {
             default -> throw new UnreachableException();
         };
         this.right = right;
+    }
+
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

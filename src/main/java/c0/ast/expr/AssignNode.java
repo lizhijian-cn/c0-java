@@ -1,13 +1,17 @@
 package c0.ast.expr;
 
-import c0.ast.AbstractNode;
+import c0.visitor.Visitor;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@AllArgsConstructor
+@Getter
 public class AssignNode extends ExprNode {
     VariableNode lhs;
     ExprNode rhs;
 
-    public AssignNode(VariableNode lhs, ExprNode rhs) {
-        this.lhs = lhs;
-        this.rhs = rhs;
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

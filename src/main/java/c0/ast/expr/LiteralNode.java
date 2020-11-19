@@ -3,7 +3,10 @@ package c0.ast.expr;
 import c0.error.UnreachableException;
 import c0.lexer.Token;
 import c0.type.Type;
+import c0.visitor.Visitor;
+import lombok.Getter;
 
+@Getter
 public class LiteralNode extends ExprNode {
     public enum LiteralTypeVal {
         STRING, UINT, CHAR, DOUBLE
@@ -46,5 +49,10 @@ public class LiteralNode extends ExprNode {
     public LiteralNode(double value) {
         this.type = LiteralTypeVal.DOUBLE;
         this.value = value;
+    }
+
+    @Override
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

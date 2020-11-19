@@ -1,7 +1,5 @@
 package c0.lexer;
 
-import java.util.Optional;
-
 public class Token {
     TokenType tokenType;
     Object value;
@@ -16,8 +14,15 @@ public class Token {
         this.value = value;
     }
 
-    public boolean equals(TokenType e) {
-        return tokenType == e;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o instanceof TokenType tokenType) return this.tokenType == tokenType;
+        if (!(o instanceof Token)) return false;
+
+        Token token = (Token) o;
+
+        return tokenType == token.tokenType;
     }
 
     public TokenType getTokenType() {
@@ -54,5 +59,10 @@ public class Token {
         } else {
             throw new RuntimeException("token type is not UINT");
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s%s", tokenType, value == null ? "" : "(" + String.valueOf(value) + ")");
     }
 }

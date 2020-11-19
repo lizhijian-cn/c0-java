@@ -1,0 +1,9 @@
+let i: int = 0;
+const a: int = 2;
+
+fn main() -> int {
+    let j: int;
+    j = a;
+    const b: int = i + j;
+    return -i + j - a * b;
+}

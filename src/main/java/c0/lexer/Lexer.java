@@ -1,7 +1,7 @@
 package c0.lexer;
 
-import c0.RichIterator;
 import c0.error.UnreachableException;
+import c0.util.RichIterator;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,12 +10,11 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class Lexer implements RichIterator<Token> {
-    CharInterator charIter;
-
+public class Lexer extends RichIterator<Token> {
+    CharIterator charIter;
     LinkedHashMap<Predicate<Character>, Supplier<Token>> actions;
 
-    public Lexer(CharInterator charIter) {
+    public Lexer(CharIterator charIter) {
         this.charIter = charIter;
         actions = new LinkedHashMap<>(Map.of(
                 Character::isWhitespace, this::skipSpace,
@@ -29,35 +28,23 @@ public class Lexer implements RichIterator<Token> {
     }
 
     @Override
-    public Token peek() {
-        // TODO peek
-        return null;
-    }
-
-    @Override
-    public Token next() {
+    public Optional<Token> getNext() {
         if (!charIter.hasNext()) {
-            return new Token(TokenType.EOF);
+            return Optional.of(new Token(TokenType.EOF));
         }
         for (var action : actions.entrySet()) {
             if (charIter.check(action.getKey())) {
-                return action.getValue().get();
+                return Optional.of(action.getValue().get());
             }
         }
         throw new RuntimeException("unrecognized character");
-    }
-
-    @Override
-    public boolean hasNext() {
-        // TODO hasNext
-        return false;
     }
 
     Token skipSpace() {
         while (charIter.check(Character::isWhitespace)) {
             charIter.next();
         }
-        return next();
+        return getNext().get();
     }
 
     boolean isUnderlineOrLetter(Character ch) {

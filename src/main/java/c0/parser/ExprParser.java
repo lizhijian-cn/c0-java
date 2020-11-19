@@ -17,17 +17,17 @@ public class ExprParser {
 
     /**
      * OPG
-     * A -> i = A | B
+     * A -> i = A | B    // look ahead 2 token
      * B -> B < C | B > C | B <= C | B >= C | B == C | B != C | C
      * C -> C + D | C - D | D
      * D -> D * E | D / E | E
      * E -> E as id | F
      * F -> -F | G
-     * G -> id() | id(H) | I
+     * G -> id() | id(H) | I // look ahead 2 token
      * H -> A, H | A
      * I -> (A) | id | literal
      *
-     * removing left recursion
+     * a grammar that removing left recursion, parsed by LL(2)
      * A -> i = A | B
      * B -> C { < C | > C | <= C | >= C | == C | != C }
      * C -> D { + D | - D }
@@ -45,52 +45,55 @@ public class ExprParser {
     ExprNode a() {
         if (lexer.check(TokenType.IDENT)) {
             var lhs = new VariableNode(lexer.next().getString());
-            lexer.expect(TokenType.ASSIGN);
-            var rhs = a();
-            return new AssignNode(lhs, rhs);
+            if (lexer.test(TokenType.ASSIGN)) {
+                var rhs = a();
+                return new AssignNode(lhs, rhs);
+            } else {
+                lexer.unread();
+            }
         }
         return b();
     }
 
     ExprNode b() {
         ExprNode left = c();
-        if (lexer.check(x ->
+        while (lexer.check(x ->
                 List.of(TokenType.GT, TokenType.LT, TokenType.GE, TokenType.LE, TokenType.EQ, TokenType.NEQ)
                         .contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = c();
-            return new BinaryOpNode(left, op, right);
+            left =  new BinaryOpNode(left, op, right);
         }
         return left;
     }
 
     ExprNode c() {
         ExprNode left = d();
-        if (lexer.check(x ->
+        while (lexer.check(x ->
                 List.of(TokenType.PLUS, TokenType.MINUS).contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = d();
-            return new BinaryOpNode(left, op, right);
+            left =  new BinaryOpNode(left, op, right);
         }
         return left;
     }
 
     ExprNode d() {
         ExprNode left = e();
-        if (lexer.check(x ->
+        while (lexer.check(x ->
                 List.of(TokenType.MUL, TokenType.DIV).contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = e();
-            return new BinaryOpNode(left, op, right);
+            left =  new BinaryOpNode(left, op, right);
         }
         return left;
     }
 
     ExprNode e() {
         ExprNode expr = f();
-        if (lexer.test(TokenType.AS)) {
+        while (lexer.test(TokenType.AS)) {
             var type = new Type(lexer.expect(TokenType.IDENT).getString());
-            expr = new AsNode(expr, type);
+            expr = new CastNode(expr, type);
         }
         return expr;
     }
@@ -106,16 +109,19 @@ public class ExprParser {
     ExprNode g() {
         if (lexer.check(TokenType.IDENT)) {
             String funcName = lexer.next().getString();
-            var args = new ArrayList<ExprNode>();
-            lexer.expect(TokenType.L_PAREN);
-            if (lexer.test(TokenType.R_PAREN)) {
-                return new FunctionCallNode(funcName, args);
-            }
-            args.add(a());
-            while (lexer.test(TokenType.COMMA)) {
+            if (lexer.test(TokenType.L_PAREN)) {
+                var args = new ArrayList<ExprNode>();
+                if (lexer.test(TokenType.R_PAREN)) {
+                    return new FunctionCallNode(funcName, args);
+                }
                 args.add(a());
+                while (lexer.test(TokenType.COMMA)) {
+                    args.add(a());
+                }
+                return new FunctionCallNode(funcName, args);
+            } else {
+                lexer.unread();
             }
-            return new FunctionCallNode(funcName, args);
         }
         return i();
     }
