@@ -6,7 +6,7 @@ import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
 
-public class Resolver implements Visitor {
+public class IRGenerator implements Visitor {
     @Override
     public void visit(Variable variable) {
 

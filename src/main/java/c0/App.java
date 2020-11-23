@@ -4,6 +4,7 @@ import c0.lexer.CharIterator;
 import c0.lexer.Lexer;
 import c0.parser.Parser;
 import c0.visitor.Dumper;
+import c0.visitor.ResolverAndChecker;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -33,6 +34,8 @@ public class App {
         var ast = parser.parse();
         var dumper = new Dumper(System.out);
         ast.accept(dumper);
+        var resolver = new ResolverAndChecker();
+        ast.accept(resolver);
+        ast.accept(dumper);
     }
-
 }

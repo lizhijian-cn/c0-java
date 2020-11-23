@@ -5,10 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
+@AllArgsConstructor
 public abstract class Entity extends AbstractNode {
     String name;
-
-    public Entity(String name) {
-        this.name = name;
-    }
 }

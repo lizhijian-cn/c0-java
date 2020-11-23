@@ -107,8 +107,13 @@ public class Dumper implements Visitor {
     @Override
     public void visit(FunctionCallNode node) {
         printClassName(node);
-        printMember("name", node.getName());
         printList("args", node.getArgs());
+        var function = node.getFunction();
+        if (function == null) {
+            printMember("function", "null");
+        } else {
+            printMember("function", function);
+        }
     }
 
     @Override
@@ -129,7 +134,12 @@ public class Dumper implements Visitor {
     public void visit(VariableNode node) {
         printClassName(node);
         printMember("variable", node.getName());
-        printMember("entity", node.getVariable() == null ? "null" : "not null");
+        var variable = node.getVariable();
+        if (variable == null) {
+            printMember("variable", "null");
+        } else {
+            printMember("variable", variable);
+        }
     }
 
     @Override

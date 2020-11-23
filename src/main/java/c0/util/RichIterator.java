@@ -1,7 +1,5 @@
 package c0.util;
 
-import c0.lexer.Token;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -36,7 +34,6 @@ public abstract class RichIterator<T> implements Iterator<T> {
         }
         stored = bf.orElseThrow(NoSuchElementException::new);
         bf = getNext();
-        if (stored instanceof Token) System.out.println(stored);
         return stored;
     }
 

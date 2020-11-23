@@ -43,6 +43,7 @@ public class ExprParser {
     }
 
     ExprNode a() {
+        // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
             var lhs = new VariableNode(lexer.next().getString());
             if (lexer.test(TokenType.ASSIGN)) {

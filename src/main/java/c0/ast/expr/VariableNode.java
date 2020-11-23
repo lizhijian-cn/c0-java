@@ -7,9 +7,9 @@ import lombok.Setter;
 
 // TODO not distinction between lhs and rhs
 @Getter
-@Setter
 public class VariableNode extends ExprNode {
-    final String name;
+    String name;
+    @Setter
     Variable variable;
 
     public VariableNode(String name) {

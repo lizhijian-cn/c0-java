@@ -32,7 +32,7 @@ public class Parser {
                 case FN -> ast.addEntity(parseFunction());
                 case LET, CONST -> ast.addEntity(parseVariable());
                 default -> exit = true;
-            };
+            }
         }
         lexer.expect(TokenType.EOF);
         return ast;
@@ -63,8 +63,11 @@ public class Parser {
             name = lexer.expect(TokenType.IDENT).getString();
             lexer.expect(TokenType.COLON);
             type = new Type(lexer.expect(TokenType.IDENT).getString());
-            lexer.expect(TokenType.ASSIGN);
-            expr = parseExpr();
+            if (lexer.test(TokenType.ASSIGN)) {
+                expr = parseExpr();
+            } else {
+                throw new RuntimeException("Constant must be initialized");
+            }
         } else {
             isConst = false;
             lexer.expect(TokenType.LET);
