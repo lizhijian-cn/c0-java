@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class LiteralNode extends ExprNode {
     public enum LiteralTypeVal {
-        STRING, UINT, CHAR, DOUBLE
+        STRING, UINT, DOUBLE
     }
 
     LiteralTypeVal type;
@@ -17,7 +17,7 @@ public class LiteralNode extends ExprNode {
 
     public static LiteralNode FactoryConstructor(Token token) {
         return switch (token.getTokenType()) {
-            case CHAR_LITERAL -> new LiteralNode(token.getChar());
+            case CHAR_LITERAL -> new LiteralNode(Character.getNumericValue(token.getChar()));
             case UINT_LITERAL -> new LiteralNode(token.getUInt());
             case STRING_LITERAL -> new LiteralNode(token.getString());
             case DOUBLE_LITERAL -> new LiteralNode(token.getDouble());
@@ -27,17 +27,13 @@ public class LiteralNode extends ExprNode {
     public static LiteralNode defaultValue(Type type) {
         return switch (type.getType()) {
             case INT -> new LiteralNode(0);
+            case DOUBLE -> new LiteralNode(0.0);
             default -> throw new RuntimeException("unsupported default value type");
         };
     }
 
     public LiteralNode(String value) {
         this.type = LiteralTypeVal.STRING;
-        this.value = value;
-    }
-
-    public LiteralNode(char value) {
-        this.type = LiteralTypeVal.CHAR;
         this.value = value;
     }
 

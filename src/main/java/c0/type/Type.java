@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 public class Type {
     public enum TypeVal {
-        INT, VOID
+        INT, VOID, DOUBLE
     }
     TypeVal type;
 
@@ -14,6 +14,7 @@ public class Type {
         this.type = switch (value) {
             case "int" -> TypeVal.INT;
             case "void" -> TypeVal.VOID;
+            case "double" -> TypeVal.DOUBLE;
             default -> throw new RuntimeException("invalid type");
         };
     }

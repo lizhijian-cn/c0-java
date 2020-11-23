@@ -3,6 +3,7 @@ const a: int = 2;
 
 fn main() -> int {
     let j: int;
+    let d: double = 1.2432e2;
     j = a;
     const b: int = i + j;
     return -i + j - a * b;

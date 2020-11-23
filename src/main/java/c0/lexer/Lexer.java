@@ -3,6 +3,7 @@ package c0.lexer;
 import c0.error.UnreachableException;
 import c0.util.RichIterator;
 
+import java.nio.channels.NonReadableChannelException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class Lexer extends RichIterator<Token> {
         actions = new LinkedHashMap<>(Map.of(
                 Character::isWhitespace, this::skipSpace,
                 this::isUnderlineOrLetter, this::lexIdentOrKeyword,
-                Character::isDigit, this::lexUInt,
+                Character::isDigit, this::lexUIntOrDouble,
                 ch -> ch.equals('"'), this::lexString,
                 ch -> ch.equals('\''), this::lexChar,
                 this::isOperator, this::lexOperator
@@ -44,7 +45,7 @@ public class Lexer extends RichIterator<Token> {
         while (charIter.check(Character::isWhitespace)) {
             charIter.next();
         }
-        return getNext().get();
+        return getNext().orElseThrow(NonReadableChannelException::new);
     }
 
     boolean isUnderlineOrLetter(Character ch) {
@@ -71,10 +72,35 @@ public class Lexer extends RichIterator<Token> {
         };
     }
 
-    Token lexUInt() {
+    Token lexUIntOrDouble() {
         var sb = new StringBuilder();
         while (charIter.check(Character::isDigit)) {
             sb.append(charIter.next());
+        }
+        if (charIter.test('.')) {
+            sb.append('.');
+            if (charIter.check(Character::isDigit)) {
+                while (charIter.check(Character::isDigit)) {
+                    sb.append(charIter.next());
+                }
+                if (charIter.check(x -> x == 'e' || x == 'E')) {
+                    sb.append(charIter.next());
+                    if (charIter.check(x -> x == '+' || x == '-')) {
+                        sb.append(charIter.next());
+                    }
+                    if (charIter.check(Character::isDigit)) {
+                        while (charIter.check(Character::isDigit)) {
+                            sb.append(charIter.next());
+                        }
+                        return new Token(TokenType.DOUBLE_LITERAL, Double.parseDouble(sb.toString()));
+                    } else {
+                        throw new RuntimeException("invalid double");
+                    }
+                }
+                return new Token(TokenType.DOUBLE_LITERAL, Double.parseDouble(sb.toString()));
+            } else {
+                throw new RuntimeException("invalid double");
+            }
         }
         return new Token(TokenType.UINT_LITERAL, Integer.parseUnsignedInt(sb.toString()));
     }
