@@ -1,6 +1,9 @@
 package c0.type;
 
 
+import lombok.Getter;
+
+@Getter
 public class Type {
     public enum TypeVal {
         INT, VOID
@@ -15,7 +18,8 @@ public class Type {
         };
     }
 
-    public TypeVal getType() {
-        return type;
+    @Override
+    public String toString() {
+        return String.format("Type(%s)", type);
     }
 }

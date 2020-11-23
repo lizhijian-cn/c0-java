@@ -9,8 +9,8 @@ import lombok.Getter;
 public class Variable extends Entity {
     Type type;
     ExprNode expr;
+    int offset;
     boolean isConst;
-    boolean isInitialized;
 
     public Variable(String name, Type type, ExprNode expr, boolean isConst) {
         super(name);
