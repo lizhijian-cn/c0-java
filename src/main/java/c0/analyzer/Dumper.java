@@ -3,7 +3,10 @@ package c0.analyzer;
 import c0.ast.AST;
 import c0.ast.AbstractNode;
 import c0.ast.expr.*;
-import c0.ast.stmt.*;
+import c0.ast.stmt.BlockNode;
+import c0.ast.stmt.EmptyNode;
+import c0.ast.stmt.ExprStmtNode;
+import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 
@@ -76,6 +79,7 @@ public class Dumper implements Visitor {
         printMember("return type", function.getReturnType().toString());
         printMember("name", function.getName());
         printList("args", function.getArgs());
+        printList("locals", function.getLocals());
         printMember("block", function.getBlockStmt());
     }
 
@@ -138,12 +142,6 @@ public class Dumper implements Visitor {
     public void visit(BlockNode node) {
         printClassName(node);
         printList("statements in block", node.getStmts());
-    }
-
-    @Override
-    public void visit(DeclStmtNode node) {
-        printClassName(node);
-        printMember("entity", node.getVariable());
     }
 
     @Override

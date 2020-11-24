@@ -10,6 +10,7 @@ import lombok.Getter;
 public class LiteralNode extends ExprNode {
     LiteralTypeVal type;
     Object value;
+
     public LiteralNode(String value) {
         this.type = LiteralTypeVal.STRING;
         this.value = value;

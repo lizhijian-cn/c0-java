@@ -9,14 +9,16 @@ import java.util.List;
 
 @Getter
 public class Function extends Entity {
-    List<Variable> args;
     Type returnType;
+    List<Variable> args;
+    List<Variable> locals;
     BlockNode blockStmt;
 
-    public Function(String name, List<Variable> args, Type type, BlockNode blockStmt) {
+    public Function(String name, Type type, List<Variable> args, List<Variable> locals, BlockNode blockStmt) {
         super(name);
-        this.args = args;
         this.returnType = type;
+        this.args = args;
+        this.locals = locals;
         this.blockStmt = blockStmt;
     }
 

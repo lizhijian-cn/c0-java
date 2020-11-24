@@ -40,17 +40,18 @@ public class Parser {
         lexer.expect(TokenType.EOF);
 
         var scope = checker.pop();
-        var functinos = new ArrayList<Function>();
+        var functions = new ArrayList<Function>();
         var variables = new ArrayList<Variable>();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
+                variable.setGlobal(true);
                 variables.add(variable);
             }
             if (entity instanceof Function function) {
-                functinos.add(function);
+                functions.add(function);
             }
         }
-        return new AST(functinos, variables);
+        return new AST(functions, variables);
     }
 
     // TODO: now only parse main function
@@ -65,7 +66,7 @@ public class Parser {
         var args = new ArrayList<Variable>();
 
         var blockStmt = parseBlockStmt();
-        return new Function(name, args, type, blockStmt);
+        return new Function(name, type, args, blockStmt.getLocals(), blockStmt);
     }
 
     Variable parseVariable() {
@@ -107,6 +108,7 @@ public class Parser {
         checker.push();
         lexer.expect(TokenType.L_BRACE);
 
+        var variables = new ArrayList<Variable>();
         var stmts = new ArrayList<StmtNode>();
         boolean exit = false;
         while (!exit) {
@@ -116,7 +118,13 @@ public class Parser {
                     stmts.add(new EmptyNode());
                 }
                 case LET, CONST -> checker.add(parseVariable());
-                case L_PAREN -> stmts.add(parseBlockStmt());
+                case L_PAREN -> {
+                    var blockStmt = parseBlockStmt();
+                    for (var local : blockStmt.getLocals()) {
+                        variables.add(local);
+                    }
+                    stmts.add(blockStmt);
+                }
                 case RETURN -> stmts.add(parseReturnStmt());
                 case R_BRACE, EOF -> exit = true;
                 default -> stmts.add(parseExprStmt());
@@ -125,7 +133,6 @@ public class Parser {
         lexer.expect(TokenType.R_BRACE);
 
         var scope = checker.pop();
-        var variables = new ArrayList<Variable>();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variables.add(variable);
@@ -133,11 +140,6 @@ public class Parser {
         }
         return new BlockNode(variables, stmts);
     }
-
-//    DeclStmtNode parseDeclStmt() {
-//        var variable = parseVariable();
-//        return new DeclStmtNode(variable.getName(), variable);
-//    }
 
     ReturnNode parseReturnStmt() {
         lexer.expect(TokenType.RETURN);
