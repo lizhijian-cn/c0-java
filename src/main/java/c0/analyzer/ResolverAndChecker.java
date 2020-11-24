@@ -1,27 +1,30 @@
-package c0.visitor;
+package c0.analyzer;
 
 import c0.ast.AST;
 import c0.ast.expr.*;
 import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
-import c0.scope.Scope;
+import c0.parser.scope.Scope;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
+@Deprecated
 public class ResolverAndChecker implements Visitor {
     Deque<Scope> scopeStack;
 
     public ResolverAndChecker() {
         this.scopeStack = new LinkedList<>();
     }
+
     Scope top() {
         if (scopeStack.isEmpty()) {
             throw new RuntimeException("scope stack is empty");
         }
         return scopeStack.peekLast();
     }
+
     Scope current() {
         if (scopeStack.isEmpty()) {
             throw new RuntimeException("scope stack is empty");
@@ -47,6 +50,7 @@ public class ResolverAndChecker implements Visitor {
         }
         throw new RuntimeException(String.format("variable %s is not defined in the scope", name));
     }
+
     void push() {
         scopeStack.push(new Scope());
     }
@@ -70,9 +74,9 @@ public class ResolverAndChecker implements Visitor {
     public void visit(AST node) {
         push();
         // add standard library function
-        for (var entity : node.getEntities()) {
-            entity.accept(this);
-        }
+//        for (var entity : node.getEntities()) {
+//            entity.accept(this);
+//        }
         pop();
     }
 
@@ -98,7 +102,7 @@ public class ResolverAndChecker implements Visitor {
         for (var expr : node.getArgs()) {
             expr.accept(this);
         }
-        node.setFunction(getFunction(node.getName()));
+//        node.setFunction(getFunction(node.getName()));
     }
 
     @Override
@@ -112,7 +116,7 @@ public class ResolverAndChecker implements Visitor {
 
     @Override
     public void visit(VariableNode node) {
-        node.setVariable(getVariable(node.getName()));
+//        node.setVariable(getVariable(node.getName()));
     }
 
     @Override

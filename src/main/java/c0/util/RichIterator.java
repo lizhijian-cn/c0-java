@@ -53,6 +53,7 @@ public abstract class RichIterator<T> implements Iterator<T> {
         }
         isUnread = true;
     }
+
     public <E> T expect(E e) {
         if (check(e)) {
             return next();

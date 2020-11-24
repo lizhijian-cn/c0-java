@@ -1,13 +1,13 @@
-package c0.scope;
+package c0.parser.scope;
 
 import c0.entity.Entity;
-import c0.entity.Function;
-import c0.entity.Variable;
+import lombok.Getter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Getter
 public class Scope {
     Map<String, Entity> entities = new LinkedHashMap<>();
 
@@ -20,10 +20,6 @@ public class Scope {
     }
 
     public Optional<Entity> get(String name) {
-//        if (!variables.containsKey(name)) {
-//            throw new RuntimeException(String.format("variable %s is not defined in the scope", name));
         return Optional.ofNullable(entities.get(name));
     }
-
-
 }

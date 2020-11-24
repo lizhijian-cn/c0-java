@@ -1,6 +1,6 @@
 package c0.ast.stmt;
 
-import c0.visitor.Visitor;
+import c0.analyzer.Visitor;
 
 public class EmptyNode extends StmtNode {
 

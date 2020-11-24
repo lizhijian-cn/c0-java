@@ -1,6 +1,6 @@
 package c0.ast.expr;
 
-import c0.visitor.Visitor;
+import c0.analyzer.Visitor;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

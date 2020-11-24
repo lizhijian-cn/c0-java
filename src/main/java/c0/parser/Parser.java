@@ -15,27 +15,42 @@ import java.util.ArrayList;
 public class Parser {
     Lexer lexer;
     ExprParser exprParser;
+    VariableChecker checker;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
-        this.exprParser = new ExprParser(lexer);
+        this.checker = new VariableChecker();
+        this.exprParser = new ExprParser(lexer, checker);
     }
+
     public AST parse() {
         return parseProgram();
     }
 
     AST parseProgram() {
-        var ast = new AST();
+        checker.push();
         boolean exit = false;
         while (!exit) {
             switch (lexer.peek().getTokenType()) {
-                case FN -> ast.addEntity(parseFunction());
-                case LET, CONST -> ast.addEntity(parseVariable());
+                case FN -> checker.add(parseFunction());
+                case LET, CONST -> checker.add(parseVariable());
                 default -> exit = true;
             }
         }
         lexer.expect(TokenType.EOF);
-        return ast;
+
+        var scope = checker.pop();
+        var functinos = new ArrayList<Function>();
+        var variables = new ArrayList<Variable>();
+        for (var entity : scope.getEntities().values()) {
+            if (entity instanceof Variable variable) {
+                variables.add(variable);
+            }
+            if (entity instanceof Function function) {
+                functinos.add(function);
+            }
+        }
+        return new AST(functinos, variables);
     }
 
     // TODO: now only parse main function
@@ -89,6 +104,7 @@ public class Parser {
     }
 
     BlockNode parseBlockStmt() {
+        checker.push();
         lexer.expect(TokenType.L_BRACE);
 
         var stmts = new ArrayList<StmtNode>();
@@ -99,7 +115,7 @@ public class Parser {
                     lexer.next();
                     stmts.add(new EmptyNode());
                 }
-                case LET, CONST -> stmts.add(parseDeclStmt());
+                case LET, CONST -> checker.add(parseVariable());
                 case L_PAREN -> stmts.add(parseBlockStmt());
                 case RETURN -> stmts.add(parseReturnStmt());
                 case R_BRACE, EOF -> exit = true;
@@ -107,13 +123,21 @@ public class Parser {
             }
         }
         lexer.expect(TokenType.R_BRACE);
-        return new BlockNode(stmts);
+
+        var scope = checker.pop();
+        var variables = new ArrayList<Variable>();
+        for (var entity : scope.getEntities().values()) {
+            if (entity instanceof Variable variable) {
+                variables.add(variable);
+            }
+        }
+        return new BlockNode(variables, stmts);
     }
 
-    DeclStmtNode parseDeclStmt() {
-        var variable = parseVariable();
-        return new DeclStmtNode(variable.getName(), variable);
-    }
+//    DeclStmtNode parseDeclStmt() {
+//        var variable = parseVariable();
+//        return new DeclStmtNode(variable.getName(), variable);
+//    }
 
     ReturnNode parseReturnStmt() {
         lexer.expect(TokenType.RETURN);

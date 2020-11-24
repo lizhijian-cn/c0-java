@@ -1,7 +1,6 @@
 package c0.util;
 
 import java.util.Iterator;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 

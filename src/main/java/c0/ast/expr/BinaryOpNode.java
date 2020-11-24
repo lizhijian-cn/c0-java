@@ -1,8 +1,8 @@
 package c0.ast.expr;
 
+import c0.analyzer.Visitor;
 import c0.error.UnreachableException;
 import c0.lexer.TokenType;
-import c0.visitor.Visitor;
 import lombok.Getter;
 
 @Getter

@@ -1,6 +1,6 @@
 package c0.ast;
 
-import c0.visitor.Visitor;
+import c0.analyzer.Visitor;
 
 public abstract class AbstractNode {
 

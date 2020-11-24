@@ -1,12 +1,17 @@
-package c0.visitor;
+package c0.analyzer;
 
+import c0.analyzer.instruction.Instruction;
 import c0.ast.AST;
 import c0.ast.expr.*;
 import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
 
+import java.util.ArrayList;
+
 public class IRGenerator implements Visitor {
+    ArrayList<Instruction> instructions;
+
     @Override
     public void visit(Variable variable) {
 

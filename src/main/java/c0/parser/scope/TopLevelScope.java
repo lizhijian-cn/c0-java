@@ -1,6 +1,5 @@
-package c0.scope;
+package c0.parser.scope;
 
-import c0.entity.Entity;
 import c0.entity.Function;
 
 import java.util.LinkedHashMap;

@@ -1,4 +1,4 @@
-package c0.visitor;
+package c0.analyzer;
 
 import c0.ast.AST;
 import c0.ast.AbstractNode;
@@ -11,8 +11,8 @@ import java.io.PrintStream;
 import java.util.List;
 
 public class Dumper implements Visitor {
-    PrintStream s;
     final String indentStr = "    ";
+    PrintStream s;
     int indent;
 
     public Dumper(PrintStream s) {
@@ -43,6 +43,7 @@ public class Dumper implements Visitor {
         printIndent();
         s.println(String.format("%s: %s", name, value));
     }
+
     void printMember(String name, AbstractNode node) {
         printIndent();
         s.println(String.format("%s:", name));
@@ -60,6 +61,7 @@ public class Dumper implements Visitor {
         }
         unindent();
     }
+
     @Override
     public void visit(Variable variable) {
         printClassName(variable);
@@ -79,7 +81,8 @@ public class Dumper implements Visitor {
 
     @Override
     public void visit(AST node) {
-        printList("decls", node.getEntities());
+        printList("global variables", node.getGlobals());
+        printList("functions", node.getFunctions());
     }
 
     @Override
@@ -108,12 +111,7 @@ public class Dumper implements Visitor {
     public void visit(FunctionCallNode node) {
         printClassName(node);
         printList("args", node.getArgs());
-        var function = node.getFunction();
-        if (function == null) {
-            printMember("function", "null");
-        } else {
-            printMember("function", function);
-        }
+        printMember("function", node.getFunction());
     }
 
     @Override
@@ -133,13 +131,7 @@ public class Dumper implements Visitor {
     @Override
     public void visit(VariableNode node) {
         printClassName(node);
-        printMember("variable", node.getName());
-        var variable = node.getVariable();
-        if (variable == null) {
-            printMember("variable", "null");
-        } else {
-            printMember("variable", variable);
-        }
+        printMember("variable", node.getVariable());
     }
 
     @Override

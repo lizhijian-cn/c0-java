@@ -1,8 +1,8 @@
 package c0.entity;
 
+import c0.analyzer.Visitor;
 import c0.ast.expr.ExprNode;
 import c0.type.Type;
-import c0.visitor.Visitor;
 import lombok.Getter;
 
 @Getter

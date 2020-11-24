@@ -1,20 +1,16 @@
 package c0.ast.expr;
 
+import c0.analyzer.Visitor;
 import c0.entity.Variable;
-import c0.visitor.Visitor;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 // TODO not distinction between lhs and rhs
 @Getter
+@AllArgsConstructor
 public class VariableNode extends ExprNode {
     String name;
-    @Setter
     Variable variable;
-
-    public VariableNode(String name) {
-        this.name = name;
-    }
 
     @Override
     public void accept(Visitor v) {

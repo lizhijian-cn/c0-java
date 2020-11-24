@@ -1,23 +1,18 @@
 package c0.ast.expr;
 
+import c0.analyzer.Visitor;
 import c0.entity.Function;
-import c0.visitor.Visitor;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 import java.util.List;
 
 @Getter
+@AllArgsConstructor
 public class FunctionCallNode extends ExprNode {
     String name;
-    @Setter
-    Function function;
     List<ExprNode> args;
-
-    public FunctionCallNode(String name, List<ExprNode> args) {
-        this.name = name;
-        this.args = args;
-    }
+    Function function;
 
     @Override
     public void accept(Visitor v) {

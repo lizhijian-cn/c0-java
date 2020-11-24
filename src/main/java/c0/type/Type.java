@@ -5,9 +5,6 @@ import lombok.Getter;
 
 @Getter
 public class Type {
-    public enum TypeVal {
-        INT, VOID, DOUBLE
-    }
     TypeVal type;
 
     public Type(String value) {
@@ -22,5 +19,9 @@ public class Type {
     @Override
     public String toString() {
         return String.format("Type(%s)", type);
+    }
+
+    public enum TypeVal {
+        INT, VOID, DOUBLE
     }
 }

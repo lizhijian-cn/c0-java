@@ -4,16 +4,15 @@ import c0.ast.expr.*;
 import c0.lexer.Lexer;
 import c0.lexer.TokenType;
 import c0.type.Type;
+import lombok.AllArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@AllArgsConstructor
 public class ExprParser {
     Lexer lexer;
-
-    public ExprParser(Lexer lexer) {
-        this.lexer = lexer;
-    }
+    VariableChecker checker;
 
     /**
      * OPG
@@ -26,7 +25,7 @@ public class ExprParser {
      * G -> id() | id(H) | I // look ahead 2 token
      * H -> A, H | A
      * I -> (A) | id | literal
-     *
+     * <p>
      * a grammar that removing left recursion, parsed by LL(2)
      * A -> i = A | B
      * B -> C { < C | > C | <= C | >= C | == C | != C }
@@ -45,7 +44,8 @@ public class ExprParser {
     ExprNode a() {
         // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
-            var lhs = new VariableNode(lexer.next().getString());
+            var name = lexer.next().getString();
+            var lhs = new VariableNode(name, checker.getVariable(name));
             if (lexer.test(TokenType.ASSIGN)) {
                 var rhs = a();
                 return new AssignNode(lhs, rhs);
@@ -63,7 +63,7 @@ public class ExprParser {
                         .contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = c();
-            left =  new BinaryOpNode(left, op, right);
+            left = new BinaryOpNode(left, op, right);
         }
         return left;
     }
@@ -74,7 +74,7 @@ public class ExprParser {
                 List.of(TokenType.PLUS, TokenType.MINUS).contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = d();
-            left =  new BinaryOpNode(left, op, right);
+            left = new BinaryOpNode(left, op, right);
         }
         return left;
     }
@@ -85,7 +85,7 @@ public class ExprParser {
                 List.of(TokenType.MUL, TokenType.DIV).contains(x.getTokenType()))) {
             var op = lexer.next().getTokenType();
             ExprNode right = e();
-            left =  new BinaryOpNode(left, op, right);
+            left = new BinaryOpNode(left, op, right);
         }
         return left;
     }
@@ -109,17 +109,17 @@ public class ExprParser {
 
     ExprNode g() {
         if (lexer.check(TokenType.IDENT)) {
-            String funcName = lexer.next().getString();
+            String name = lexer.next().getString();
             if (lexer.test(TokenType.L_PAREN)) {
                 var args = new ArrayList<ExprNode>();
                 if (lexer.test(TokenType.R_PAREN)) {
-                    return new FunctionCallNode(funcName, args);
+                    return new FunctionCallNode(name, args, checker.getFunction(name));
                 }
                 args.add(a());
                 while (lexer.test(TokenType.COMMA)) {
                     args.add(a());
                 }
-                return new FunctionCallNode(funcName, args);
+                return new FunctionCallNode(name, args, checker.getFunction(name));
             } else {
                 lexer.unread();
             }
@@ -139,7 +139,8 @@ public class ExprParser {
             return LiteralNode.FactoryConstructor(lexer.next());
         }
         if (lexer.check(TokenType.IDENT)) {
-            return new VariableNode(lexer.next().getString());
+            var name = lexer.next().getString();
+            return new VariableNode(name, checker.getVariable(name));
         }
         throw new RuntimeException("unrecognized Token " + lexer.peek());
     }

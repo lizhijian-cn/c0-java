@@ -1,20 +1,19 @@
 package c0.ast;
 
-import c0.entity.Entity;
-import c0.visitor.Visitor;
+import c0.analyzer.Visitor;
+import c0.entity.Function;
+import c0.entity.Variable;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 @Getter
+@AllArgsConstructor
 public class AST extends AbstractNode {
-    List<Entity> entities = new ArrayList<>();
-
-    public void addEntity(Entity entity) {
-        entities.add(entity);
-    }
+    List<Function> functions;
+    List<Variable> globals;
 
     @Override
     public void accept(Visitor v) {
