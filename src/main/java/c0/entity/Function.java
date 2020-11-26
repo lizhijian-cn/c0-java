@@ -3,7 +3,9 @@ package c0.entity;
 import c0.analyzer.Visitor;
 import c0.ast.stmt.BlockNode;
 import c0.type.Type;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 

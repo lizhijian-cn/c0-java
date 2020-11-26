@@ -12,16 +12,17 @@ public class Variable extends Entity {
     ExprNode expr;
     boolean isConst;
     @Setter
-    int offset;
-    @Setter
-    boolean isGlobal;
+    VariableTypeOp varType;
 
+    public enum VariableTypeOp {
+        GLOBAL, LOCAL, ARG;
+    }
     public Variable(String name, Type type, ExprNode expr, boolean isConst) {
         super(name);
         this.type = type;
         this.expr = expr;
         this.isConst = isConst;
-        this.isGlobal = false;
+        this.varType = VariableTypeOp.LOCAL;
     }
 
     @Override

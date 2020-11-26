@@ -9,7 +9,7 @@ import lombok.Getter;
 @Getter
 public class CastNode extends ExprNode {
     ExprNode expr;
-    Type type;
+    Type castType;
 
     @Override
     public void accept(Visitor v) {

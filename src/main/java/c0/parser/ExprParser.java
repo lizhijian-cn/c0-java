@@ -112,13 +112,13 @@ public class ExprParser {
             String name = lexer.next().getString();
             if (lexer.test(TokenType.L_PAREN)) {
                 var args = new ArrayList<ExprNode>();
-                if (lexer.test(TokenType.R_PAREN)) {
-                    return new FunctionCallNode(name, args, checker.getFunction(name));
-                }
-                args.add(a());
-                while (lexer.test(TokenType.COMMA)) {
+                if (!lexer.check(TokenType.R_PAREN)) {
                     args.add(a());
+                    while (lexer.test(TokenType.COMMA)) {
+                        args.add(a());
+                    }
                 }
+                lexer.expect(TokenType.R_PAREN);
                 return new FunctionCallNode(name, args, checker.getFunction(name));
             } else {
                 lexer.unread();

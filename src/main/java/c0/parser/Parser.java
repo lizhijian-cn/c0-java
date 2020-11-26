@@ -44,11 +44,8 @@ public class Parser {
         var variables = new ArrayList<Variable>();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
-                variable.setGlobal(true);
+                variable.setVarType(Variable.VariableTypeOp.GLOBAL);
                 variables.add(variable);
-            }
-            if (entity instanceof Function function) {
-                functions.add(function);
             }
         }
         return new AST(functions, variables);
@@ -57,16 +54,34 @@ public class Parser {
     // TODO: now only parse main function
     Function parseFunction() {
         lexer.expect(TokenType.FN);
-        lexer.expect(TokenType.IDENT);
-        var name = "main";
+        var name = lexer.expect(TokenType.IDENT).getString();
+        var args = new ArrayList<Variable>();
         lexer.expect(TokenType.L_PAREN);
+        if (!lexer.check(TokenType.R_PAREN)) {
+            args.add(parseParam());
+            while (lexer.test(TokenType.COMMA)) {
+                args.add(parseParam());
+            }
+        }
         lexer.expect(TokenType.R_PAREN);
         lexer.expect(TokenType.ARROW);
         var type = new Type(lexer.expect(TokenType.IDENT).getString());
-        var args = new ArrayList<Variable>();
 
         var blockStmt = parseBlockStmt();
         return new Function(name, type, args, blockStmt.getLocals(), blockStmt);
+    }
+
+    Variable parseParam() {
+        boolean isConst = false;
+        if (lexer.test(TokenType.CONST)) {
+            isConst = true;
+        }
+        var name = lexer.expect(TokenType.IDENT).getString();
+        lexer.expect(TokenType.COLON);
+        var type = new Type(lexer.expect(TokenType.IDENT).getString());
+        var variable = new Variable(name, type, LiteralNode.defaultValue(type), isConst);
+        variable.setVarType(Variable.VariableTypeOp.ARG);
+        return variable;
     }
 
     Variable parseVariable() {

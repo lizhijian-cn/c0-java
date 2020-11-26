@@ -108,7 +108,7 @@ public class Dumper implements Visitor {
     public void visit(CastNode node) {
         printClassName(node);
         printMember("expr", node.getExpr());
-        printMember("as type", node.getType().toString());
+        printMember("as type", node.getCastType().toString());
     }
 
     @Override

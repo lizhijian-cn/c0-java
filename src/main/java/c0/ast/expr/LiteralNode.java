@@ -4,25 +4,25 @@ import c0.analyzer.Visitor;
 import c0.error.UnreachableException;
 import c0.lexer.Token;
 import c0.type.Type;
+import c0.type.TypeVal;
 import lombok.Getter;
 
 @Getter
 public class LiteralNode extends ExprNode {
-    LiteralTypeVal type;
     Object value;
 
     public LiteralNode(String value) {
-        this.type = LiteralTypeVal.STRING;
+        this.type = new Type(TypeVal.STRING);
         this.value = value;
     }
 
     public LiteralNode(long value) {
-        this.type = LiteralTypeVal.UINT;
+        this.type = new Type(TypeVal.UINT);
         this.value = value;
     }
 
     public LiteralNode(double value) {
-        this.type = LiteralTypeVal.DOUBLE;
+        this.type = new Type(TypeVal.DOUBLE);
         this.value = value;
     }
 
@@ -38,7 +38,7 @@ public class LiteralNode extends ExprNode {
 
     public static LiteralNode defaultValue(Type type) {
         return switch (type.getType()) {
-            case INT -> new LiteralNode(0);
+            case UINT -> new LiteralNode(0);
             case DOUBLE -> new LiteralNode(0.0);
             default -> throw new RuntimeException("unsupported default value type");
         };
@@ -47,9 +47,5 @@ public class LiteralNode extends ExprNode {
     @Override
     public void accept(Visitor v) {
         v.visit(this);
-    }
-
-    public enum LiteralTypeVal {
-        STRING, UINT, DOUBLE
     }
 }
