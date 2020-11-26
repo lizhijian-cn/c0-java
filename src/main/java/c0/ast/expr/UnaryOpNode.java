@@ -19,7 +19,7 @@ public class UnaryOpNode extends ExprNode {
     }
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public <T, E> T accept(Visitor<T, E> v) {
+        return v.visit(this);
     }
 }

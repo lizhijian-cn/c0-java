@@ -3,17 +3,14 @@ package c0.analyzer;
 import c0.ast.AST;
 import c0.ast.AbstractNode;
 import c0.ast.expr.*;
-import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.EmptyNode;
-import c0.ast.stmt.ExprStmtNode;
-import c0.ast.stmt.ReturnNode;
+import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
 
 import java.io.PrintStream;
 import java.util.List;
 
-public class Dumper implements Visitor {
+public class Dumper implements Visitor<Void, Void> {
     final String indentStr = "    ";
     PrintStream s;
     int indent;
@@ -51,7 +48,12 @@ public class Dumper implements Visitor {
         printIndent();
         s.println(String.format("%s:", name));
         indent();
-        node.accept(this);
+        if (node instanceof ExprNode expr) {
+            expr.accept(this);
+        }
+        if (node instanceof StmtNode stmt) {
+            stmt.accept(this);
+        }
         unindent();
     }
 
@@ -60,13 +62,18 @@ public class Dumper implements Visitor {
         s.println(name + ":");
         indent();
         for (var node : nodes) {
-            node.accept(this);
+            if (node instanceof ExprNode expr) {
+                expr.accept(this);
+            }
+            if (node instanceof StmtNode stmt) {
+                stmt.accept(this);
+            }
         }
         unindent();
     }
 
     @Override
-    public void visit(Variable variable) {
+    public Void visit(Variable variable) {
         printClassName(variable);
         printMember("type", variable.getType().toString());
         printMember("name", variable.getName());
@@ -74,90 +81,103 @@ public class Dumper implements Visitor {
     }
 
     @Override
-    public void visit(Function function) {
+    public Void visit(Function function) {
         printClassName(function);
         printMember("return type", function.getReturnType().toString());
         printMember("name", function.getName());
         printList("args", function.getArgs());
         printList("locals", function.getLocals());
         printMember("block", function.getBlockStmt());
+        return null;
     }
 
     @Override
-    public void visit(AST node) {
+    public Void visit(AST node) {
         printList("global variables", node.getGlobals());
         printList("functions", node.getFunctions());
+        return null;
     }
 
     @Override
-    public void visit(AssignNode node) {
+    public Void visit(AssignNode node) {
         printClassName(node);
         printMember("lhs", node.getLhs());
         printMember("rhs", node.getRhs());
+        return null;
     }
 
     @Override
-    public void visit(BinaryOpNode node) {
+    public Void visit(BinaryOpNode node) {
         printClassName(node);
         printMember("op", node.getOp().toString());
         printMember("left", node.getLeft());
         printMember("right", node.getRight());
+        return null;
     }
 
     @Override
-    public void visit(CastNode node) {
+    public Void visit(CastNode node) {
         printClassName(node);
         printMember("expr", node.getExpr());
         printMember("as type", node.getCastType().toString());
+        return null;
     }
 
     @Override
-    public void visit(FunctionCallNode node) {
+    public Void visit(FunctionCallNode node) {
         printClassName(node);
         printList("args", node.getArgs());
         printMember("function", node.getFunction());
+        return null;
     }
 
     @Override
-    public void visit(LiteralNode node) {
+    public Void visit(LiteralNode node) {
         printClassName(node);
         printMember("type", node.getType().toString());
         printMember("literal", node.getValue().toString());
+        return null;
     }
 
     @Override
-    public void visit(UnaryOpNode node) {
+    public Void visit(UnaryOpNode node) {
         printClassName(node);
         printMember("prefix op", node.getOp().toString());
         printMember("expr", node.getExpr());
+        return null;
     }
 
     @Override
-    public void visit(VariableNode node) {
+    public Void visit(VariableNode node) {
         printClassName(node);
         printMember("variable", node.getVariable());
+        return null;
     }
 
     @Override
-    public void visit(BlockNode node) {
+    public Void visit(BlockNode node) {
         printClassName(node);
         printList("statements in block", node.getStmts());
+        return null;
     }
 
     @Override
-    public void visit(EmptyNode node) {
+    public Void visit(EmptyNode node) {
         printClassName(node);
+        return null;
     }
 
     @Override
-    public void visit(ExprStmtNode node) {
+    public Void visit(ExprStmtNode node) {
         printClassName(node);
         printMember("expr", node.getExpr());
+        return null;
     }
 
     @Override
-    public void visit(ReturnNode node) {
+    public Void visit(ReturnNode node) {
         printClassName(node);
         printMember("return value", node.getReturnValue());
+        return null;
     }
 }

@@ -14,8 +14,8 @@ public class BlockNode extends StmtNode {
     List<StmtNode> stmts;
 
     @Override
-    public void accept(Visitor v) {
-        v.visit(this);
+    public <T, E> E accept(Visitor<T, E> v) {
+        return v.visit(this);
     }
 }
 

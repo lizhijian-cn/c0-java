@@ -9,33 +9,32 @@ import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 
-public interface Visitor {
+public interface Visitor<T, E> {
+    T visit(AssignNode node);
 
-    void visit(Variable variable);
+    T visit(BinaryOpNode node);
 
-    void visit(Function function);
+    T visit(CastNode node);
 
-    void visit(AST node);
+    T visit(FunctionCallNode node);
 
-    void visit(AssignNode node);
+    T visit(LiteralNode node);
 
-    void visit(BinaryOpNode node);
+    T visit(UnaryOpNode node);
 
-    void visit(CastNode node);
+    T visit(VariableNode node);
 
-    void visit(FunctionCallNode node);
+    E visit(Variable variable);
 
-    void visit(LiteralNode node);
+    E visit(Function function);
 
-    void visit(UnaryOpNode node);
+    E visit(AST node);
 
-    void visit(VariableNode node);
+    E visit(BlockNode node);
 
-    void visit(BlockNode node);
+    E visit(EmptyNode node);
 
-    void visit(EmptyNode node);
+    E visit(ExprStmtNode node);
 
-    void visit(ExprStmtNode node);
-
-    void visit(ReturnNode node);
+    E visit(ReturnNode node);
 }
