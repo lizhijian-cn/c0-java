@@ -6,6 +6,7 @@ import c0.lexer.TokenType;
 import c0.type.Type;
 import lombok.AllArgsConstructor;
 
+import java.nio.file.ClosedDirectoryStreamException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,8 +46,12 @@ public class ExprParser {
         // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
             var name = lexer.next().getString();
-            var lhs = new VariableNode(name, checker.getVariable(name));
+            var variable = checker.getVariable(name);
+            var lhs = new VariableNode(name, variable);
             if (lexer.test(TokenType.ASSIGN)) {
+                if (variable.isConst()) {
+                    throw new RuntimeException("constant must not be assigned");
+                }
                 var rhs = a();
                 return new AssignNode(lhs, rhs);
             } else {
