@@ -8,7 +8,7 @@ import lombok.Setter;
 import org.w3c.dom.Node;
 
 @Getter
-public abstract class Entity extends StmtNode {
+public abstract class Entity extends AbstractNode {
     String name;
     @Setter
     int id;

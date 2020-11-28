@@ -11,6 +11,7 @@ import c0.lexer.TokenType;
 import c0.type.Type;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class Parser {
     Lexer lexer;
@@ -41,26 +42,31 @@ public class Parser {
 
         var scope = checker.pop();
         var functions = new ArrayList<Function>();
-        var variables = new ArrayList<Variable>();
+        var globals = new ArrayList<Variable>();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variable.setVarType(Variable.VariableTypeOp.GLOBAL);
-                variables.add(variable);
+                variable.setId(globals.size());
+                globals.add(variable);
+            }
+            if (entity instanceof Function function) {
+                function.setId(functions.size());
+                functions.add(function);
             }
         }
-        return new AST(functions, variables);
+        return new AST(functions, globals);
     }
 
     // TODO: now only parse main function
     Function parseFunction() {
         lexer.expect(TokenType.FN);
         var name = lexer.expect(TokenType.IDENT).getString();
-        var args = new ArrayList<Variable>();
+        var params = new ArrayList<Variable>();
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
-            args.add(parseParam());
+            params.add(parseParam());
             while (lexer.test(TokenType.COMMA)) {
-                args.add(parseParam());
+                params.add(parseParam());
             }
         }
         lexer.expect(TokenType.R_PAREN);
@@ -68,7 +74,11 @@ public class Parser {
         var type = new Type(lexer.expect(TokenType.IDENT).getString());
 
         var blockStmt = parseBlockStmt();
-        return new Function(name, type, args, blockStmt.getLocals(), blockStmt);
+        var locals = blockStmt.getLocals();
+        for (int i = 0; i < locals.size(); i++) {
+            locals.get(i).setId(i);
+        }
+        return new Function(name, type, params, locals, blockStmt);
     }
 
     Variable parseParam() {
@@ -123,7 +133,7 @@ public class Parser {
         checker.push();
         lexer.expect(TokenType.L_BRACE);
 
-        var variables = new ArrayList<Variable>();
+        var locals = new ArrayList<Variable>();
         var stmts = new ArrayList<StmtNode>();
         boolean exit = false;
         while (!exit) {
@@ -135,9 +145,7 @@ public class Parser {
                 case LET, CONST -> checker.add(parseVariable());
                 case L_PAREN -> {
                     var blockStmt = parseBlockStmt();
-                    for (var local : blockStmt.getLocals()) {
-                        variables.add(local);
-                    }
+                    locals.addAll(blockStmt.getLocals());
                     stmts.add(blockStmt);
                 }
                 case RETURN -> stmts.add(parseReturnStmt());
@@ -150,10 +158,10 @@ public class Parser {
         var scope = checker.pop();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
-                variables.add(variable);
+                locals.add(variable);
             }
         }
-        return new BlockNode(variables, stmts);
+        return new BlockNode(locals, stmts);
     }
 
     ReturnNode parseReturnStmt() {
@@ -163,7 +171,7 @@ public class Parser {
             returnValue = parseExpr();
             lexer.expect(TokenType.SEMICOLON);
         }
-        return new ReturnNode(returnValue);
+        return new ReturnNode(Optional.ofNullable(returnValue));
     }
 
     // TODO try to parse expr statement, if success, drop it, otherwise, throw a exception

@@ -5,13 +5,15 @@ import c0.ast.expr.ExprNode;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Optional;
+
 @AllArgsConstructor
 @Getter
 public class ReturnNode extends StmtNode {
-    ExprNode returnValue;
+    Optional<ExprNode> returnValue;
 
     @Override
-    public <T, E> E accept(Visitor<T, E> v) {
+    public <T> T accept(Visitor<T> v) {
         return v.visit(this);
     }
 }

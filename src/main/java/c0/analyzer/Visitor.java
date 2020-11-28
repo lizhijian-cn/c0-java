@@ -9,7 +9,13 @@ import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 
-public interface Visitor<T, E> {
+public interface Visitor<T> {
+    T visit(Variable variable);
+
+    T visit(Function function);
+
+    T visit(AST node);
+
     T visit(AssignNode node);
 
     T visit(BinaryOpNode node);
@@ -24,17 +30,11 @@ public interface Visitor<T, E> {
 
     T visit(VariableNode node);
 
-    E visit(Variable variable);
+    T visit(BlockNode node);
 
-    E visit(Function function);
+    T visit(EmptyNode node);
 
-    E visit(AST node);
+    T visit(ExprStmtNode node);
 
-    E visit(BlockNode node);
-
-    E visit(EmptyNode node);
-
-    E visit(ExprStmtNode node);
-
-    E visit(ReturnNode node);
+    T visit(ReturnNode node);
 }

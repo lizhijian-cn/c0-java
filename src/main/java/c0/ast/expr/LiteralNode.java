@@ -45,7 +45,7 @@ public class LiteralNode extends ExprNode {
     }
 
     @Override
-    public <T, E> T accept(Visitor<T, E> v) {
+    public <T> T accept(Visitor<T> v) {
         return v.visit(this);
     }
 }

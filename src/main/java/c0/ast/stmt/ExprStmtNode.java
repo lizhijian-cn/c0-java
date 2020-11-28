@@ -11,7 +11,7 @@ public class ExprStmtNode extends StmtNode {
     ExprNode expr;
 
     @Override
-    public <T, E> E accept(Visitor<T, E> v) {
+    public <T> T accept(Visitor<T> v) {
         return v.visit(this);
     }
 }

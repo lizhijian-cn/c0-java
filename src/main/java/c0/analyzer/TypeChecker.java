@@ -16,19 +16,17 @@ import c0.type.TypeVal;
  * static type checker
  * variable type void
  */
-public class TypeChecker implements Visitor<Type, Void> {
-
-    void expectValidExprType(Type... types) {
-        for (var type : types) {
-            if (type.equals(TypeVal.STRING) || type.equals(TypeVal.VOID)) {
-                throw new RuntimeException(String.format("%s cant be operand", type));
-            }
-        }
-    }
+public class TypeChecker implements Visitor<Type> {
 
     void expectEquals(Type a, Type b) {
         if (!a.equals(b))
             throw new RuntimeException(String.format("expected %s, but got %s", a, b));
+    }
+
+    void expect(Type type, TypeVal typeVal) {
+        if (!type.equals(typeVal)) {
+            throw new RuntimeException(String.format("expected not %s", typeVal));
+        }
     }
 
     void expectNot(Type type, TypeVal typeVal) {
@@ -38,83 +36,99 @@ public class TypeChecker implements Visitor<Type, Void> {
     }
 
     @Override
-    public Void visit(Variable variable) {
+    public Type visit(Variable variable) {
         expectNot(variable.getType(), TypeVal.VOID);
+        expectNot(variable.getType(), TypeVal.STRING);
         return null;
     }
 
     @Override
-    public Void visit(Function function) {
-        function.getArgs().forEach(x -> x.accept(this));
+    public Type visit(Function function) {
+        function.getParams().forEach(x -> x.accept(this));
         function.getLocals().forEach(x -> x.accept(this));
+        function.getBlockStmt().accept(this);
         var returnType = function.getReturnType();
-        if (returnType.equals(TypeVal.VOID)) {
-            for (var )
+        for (var stmt : function.getBlockStmt().getStmts()) {
+            if (stmt instanceof ReturnNode returnStmt && returnStmt.getReturnValue().isPresent()) {
+                expectEquals(returnType, returnStmt.getReturnValue().get().getType());
+                return null;
+            }
         }
+        expect(returnType, TypeVal.VOID);
         return null;
     }
 
     @Override
-    public Void visit(AST node) {
+    public Type visit(AST node) {
+        node.getGlobals().forEach(x -> x.accept(this));
+        node.getFunctions().forEach(x -> x.accept(this));
         return null;
     }
 
     @Override
-    public Void visit(BlockNode node) {
+    public Type visit(BlockNode node) {
+        node.getLocals().forEach(x -> x.accept(this));
+        node.getStmts().forEach(x -> x.accept(this));
         return null;
     }
 
     @Override
-    public Void visit(EmptyNode node) {
+    public Type visit(EmptyNode node) {
         return null;
     }
 
     @Override
-    public Void visit(ExprStmtNode node) {
+    public Type visit(ExprStmtNode node) {
+        node.getExpr().accept(this);
         return null;
     }
 
     @Override
-    public Void visit(ReturnNode node) {
+    public Type visit(ReturnNode node) {
+        node.getReturnValue().ifPresent(x -> x.accept(this));
         return null;
     }
 
     @Override
     public Type visit(AssignNode node) {
-
-        expectEquals();
-        return null;
+        var rhs = node.getRhs().accept(this);
+        expectEquals(node.getLhs().getType(), rhs);
+        node.setType(rhs);
+        return rhs;
     }
 
     @Override
     public Type visit(BinaryOpNode node) {
         var lhs = node.getLeft().accept(this);
+        expectNot(lhs, TypeVal.STRING);
         var rhs = node.getRight().accept(this);
-        expectValidExprType(lhs, rhs);
+        expectNot(rhs, TypeVal.STRING);
         expectEquals(lhs, rhs);
-        return lhs;
+        node.setType(lhs);
+        return node.getType();
     }
 
     @Override
     public Type visit(CastNode node) {
         var lhs = node.getExpr().accept(this);
+        expectNot(lhs, TypeVal.STRING);
         var rhs = node.getCastType();
-        expectValidExprType(lhs, rhs);
-        return rhs;
+        expectNot(rhs, TypeVal.VOID);
+        node.setType(rhs);
+        return node.getType();
     }
 
     @Override
     public Type visit(FunctionCallNode node) {
-        int n = node.getArgs().size();
-        var args = node.getFunction().getArgs();
-        if (n != args.size()) {
+        node.getArgs().forEach(x -> x.accept(this));
+        var params = node.getFunction().getParams();
+        var args = node.getArgs();
+
+        if (params.size() != args.size()) {
             throw new RuntimeException("argument number error");
         }
-        for (int i = 0; i < n; i++) {
-            var t1 = node.getArgs().get(i).getType();
-            var t2 = args.get(0).getType();
-            expectValidExprType(t1, t2);
-            expectEquals(t1, t2);
+        for (int i = 0; i < params.size(); i++) {
+            expectEquals(params.get(i).getType(), args.get(0).getType());
         }
         return node.getFunction().getReturnType();
     }
@@ -126,12 +140,15 @@ public class TypeChecker implements Visitor<Type, Void> {
 
     @Override
     public Type visit(UnaryOpNode node) {
-        expectValidExprType(node.getType());
+        var type = node.getExpr().accept(this);
+        expectNot(type, TypeVal.STRING);
+        node.setType(type);
         return node.getType();
     }
 
     @Override
     public Type visit(VariableNode node) {
-        return node.getVariable().getType();
+        node.setType(node.getVariable().getType());
+        return node.getType();
     }
 }

@@ -10,7 +10,7 @@ import c0.entity.Variable;
 import java.io.PrintStream;
 import java.util.List;
 
-public class Dumper implements Visitor<Void, Void> {
+public class Dumper implements Visitor<Void> {
     final String indentStr = "    ";
     PrintStream s;
     int indent;
@@ -30,46 +30,34 @@ public class Dumper implements Visitor<Void, Void> {
         indent++;
     }
 
-    void unindent() {
+    void unIndent() {
         indent--;
     }
 
     void printClassName(AbstractNode node) {
         printIndent();
-        s.println(String.format("<<%s>>: ", node.getClass()));
+        s.printf("<<%s>>: %n", node.getClass());
     }
 
     void printMember(String name, String value) {
         printIndent();
-        s.println(String.format("%s: %s", name, value));
+        s.printf("%s: %s%n", name, value);
     }
 
     void printMember(String name, AbstractNode node) {
         printIndent();
-        s.println(String.format("%s:", name));
+        s.printf("%s:%n", name);
         indent();
-        if (node instanceof ExprNode expr) {
-            expr.accept(this);
-        }
-        if (node instanceof StmtNode stmt) {
-            stmt.accept(this);
-        }
-        unindent();
+        node.accept(this);
+        unIndent();
     }
 
     void printList(String name, List<? extends AbstractNode> nodes) {
         printIndent();
         s.println(name + ":");
         indent();
-        for (var node : nodes) {
-            if (node instanceof ExprNode expr) {
-                expr.accept(this);
-            }
-            if (node instanceof StmtNode stmt) {
-                stmt.accept(this);
-            }
-        }
-        unindent();
+        nodes.forEach(x -> x.accept(this));
+        unIndent();
     }
 
     @Override
@@ -78,6 +66,7 @@ public class Dumper implements Visitor<Void, Void> {
         printMember("type", variable.getType().toString());
         printMember("name", variable.getName());
         printMember("value", variable.getExpr());
+        return null;
     }
 
     @Override
@@ -85,7 +74,7 @@ public class Dumper implements Visitor<Void, Void> {
         printClassName(function);
         printMember("return type", function.getReturnType().toString());
         printMember("name", function.getName());
-        printList("args", function.getArgs());
+        printList("args", function.getParams());
         printList("locals", function.getLocals());
         printMember("block", function.getBlockStmt());
         return null;
@@ -177,7 +166,11 @@ public class Dumper implements Visitor<Void, Void> {
     @Override
     public Void visit(ReturnNode node) {
         printClassName(node);
-        printMember("return value", node.getReturnValue());
+        if (node.getReturnValue().isPresent()) {
+            printMember("return value", node.getReturnValue().get());
+        } else {
+            printMember("return value", "void");
+        }
         return null;
     }
 }
