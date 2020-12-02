@@ -15,7 +15,7 @@ public class Variable extends Entity {
     VariableTypeOp varType;
 
     public enum VariableTypeOp {
-        GLOBAL, LOCAL, ARG;
+        GLOBAL, LOCAL, ARG
     }
     public Variable(String name, Type type, ExprNode expr, boolean isConst) {
         super(name);
@@ -26,7 +26,7 @@ public class Variable extends Entity {
     }
 
     @Override
-    public <T> T accept(Visitor<T> v) {
-        return v.visit(this);
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

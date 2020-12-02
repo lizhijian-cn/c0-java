@@ -11,7 +11,7 @@ import org.w3c.dom.Node;
 public abstract class Entity extends AbstractNode {
     String name;
     @Setter
-    int id;
+    int offset;
 
     Entity(String name) {
         this.name = name;

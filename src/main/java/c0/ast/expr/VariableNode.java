@@ -13,7 +13,7 @@ public class VariableNode extends ExprNode {
     Variable variable;
 
     @Override
-    public <T> T accept(Visitor<T> v) {
-        return v.visit(this);
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

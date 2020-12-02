@@ -1,0 +1,9 @@
+const i: int = 1;
+fn f(a: int, b: int) -> int {
+    let c: int = 1;
+    return a + b + c;
+}
+
+fn main() -> int {
+    return f(3, 4);
+}

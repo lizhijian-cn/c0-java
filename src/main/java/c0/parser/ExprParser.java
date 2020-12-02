@@ -138,8 +138,13 @@ public class ExprParser {
             lexer.expect(TokenType.R_PAREN);
             return expr;
         }
+        if (lexer.check(TokenType.STRING_LITERAL)) {
+            var string = LiteralNode.FactoryConstructor(lexer.next());
+            var strVar = checker.addString(string);
+            return new VariableNode(strVar.getName(), strVar);
+        }
         if (lexer.check(x ->
-                List.of(TokenType.CHAR_LITERAL, TokenType.DOUBLE_LITERAL, TokenType.STRING_LITERAL, TokenType.UINT_LITERAL)
+                List.of(TokenType.CHAR_LITERAL, TokenType.DOUBLE_LITERAL, TokenType.UINT_LITERAL)
                         .contains(x.getTokenType()))) {
             return LiteralNode.FactoryConstructor(lexer.next());
         }

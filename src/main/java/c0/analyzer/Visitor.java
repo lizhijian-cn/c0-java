@@ -9,32 +9,36 @@ import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 
-public interface Visitor<T> {
-    T visit(Variable variable);
+public interface Visitor {
+    void visit(Variable variable);
 
-    T visit(Function function);
+    void visit(Function function);
 
-    T visit(AST node);
+    void visit(AST node);
 
-    T visit(AssignNode node);
+    void visit(AssignNode node);
 
-    T visit(BinaryOpNode node);
+    void visit(BinaryOpNode node);
 
-    T visit(CastNode node);
+    void visit(CastNode node);
 
-    T visit(FunctionCallNode node);
+    void visit(FunctionCallNode node);
 
-    T visit(LiteralNode node);
+    void visit(LiteralNode node);
 
-    T visit(UnaryOpNode node);
+    void visit(UnaryOpNode node);
 
-    T visit(VariableNode node);
+    void visit(VariableNode node);
 
-    T visit(BlockNode node);
+    void visit(BlockNode node);
 
-    T visit(EmptyNode node);
+    default void visit(EmptyNode node) {
 
-    T visit(ExprStmtNode node);
+    }
 
-    T visit(ReturnNode node);
+    default void visit(ExprStmtNode node) {
+        node.getExpr().accept(this);
+    }
+
+    void visit(ReturnNode node);
 }

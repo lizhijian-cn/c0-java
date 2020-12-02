@@ -4,7 +4,7 @@ import c0.analyzer.Visitor;
 
 public class EmptyNode extends StmtNode {
     @Override
-    public <T> T accept(Visitor<T> v) {
-        return v.visit(this);
+    public void accept(Visitor v) {
+        v.visit(this);
     }
 }

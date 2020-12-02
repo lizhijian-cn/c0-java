@@ -46,12 +46,12 @@ public class Parser {
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variable.setVarType(Variable.VariableTypeOp.GLOBAL);
-                variable.setId(globals.size());
+                variable.setOffset(globals.size());
                 globals.add(variable);
             }
             if (entity instanceof Function function) {
-                function.setId(functions.size());
                 functions.add(function);
+                function.setOffset(functions.size());
             }
         }
         return new AST(functions, globals);
@@ -76,7 +76,7 @@ public class Parser {
         var blockStmt = parseBlockStmt();
         var locals = blockStmt.getLocals();
         for (int i = 0; i < locals.size(); i++) {
-            locals.get(i).setId(i);
+            locals.get(i).setOffset(i);
         }
         return new Function(name, type, params, locals, blockStmt);
     }
