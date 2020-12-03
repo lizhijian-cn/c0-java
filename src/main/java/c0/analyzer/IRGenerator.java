@@ -25,10 +25,16 @@ import java.util.List;
 @Getter
 @AllArgsConstructor
 public class IRGenerator implements Visitor {
-    IR ir;
+    int magic;
+    int version;
     int globalNumberCount;
     RichDataOutputStream s;
 
+    public IRGenerator(RichDataOutputStream s) {
+        this.s = s;
+        this.magic = 0x72303b3e;
+        this.version = 1;
+    }
     @Override
     public void visit(Variable variable) {
         if (variable.getType().equals(TypeVal.STRING)) {
@@ -46,7 +52,7 @@ public class IRGenerator implements Visitor {
 
     @Override
     public void visit(Function function) {
-        s.writeInt(globalNumberCount + function.getOffset());
+        s.writeInt(function.getOffset());
         s.writeInt(function.getReturnType().equals(TypeVal.VOID) ? 0 : 1);
         s.writeInt(function.getParams().size());
         s.writeInt(function.getLocals().size());
@@ -63,43 +69,60 @@ public class IRGenerator implements Visitor {
     @Override
     @SneakyThrows
     public void visit(AST node) {
-        s.writeInt(ir.getMagic());
-        s.writeInt(ir.getVersion());
-        globalNumberCount = node.getGlobals().size();
-        s.writeInt(globalNumberCount + node.getFunctions().size());
-        for (Variable variable : node.getGlobals()) {
+        s.writeInt(magic);
+        s.writeInt(version);
+        int globalCount = node.getGlobals().size(), stringCount = node.getStrings().size(), funcCount = node.getFunctions().size();
+        s.writeInt(globalCount + stringCount);
+        for (int i = 0; i < globalCount; i++) {
+            node.getGlobals().get(i).setOffset(i);
             s.writeByte(0);
-            switch (variable.getType().getType()) {
-                case STRING -> {
-                    if (variable.getExpr() instanceof LiteralNode literal && literal.getType().equals(TypeVal.STRING)) {
-                        var string = (String) literal.getValue();
-                        s.writeInt(string.length());
-                        s.writeString(string);
-                    }
-                }
-                case UINT, DOUBLE -> {
-                    s.writeInt(8);
-                    s.writeLong(0);
-                }
-                default -> throw new UnreachableException();
-            }
+            s.writeInt(8);
+            s.writeLong(0);
         }
-        node.getFunctions().add(new Function("_start", new Type(TypeVal.VOID), List.of(), List.of(), null));
-        for (Function function : node.getFunctions()) {
+        for (int i = 0; i < stringCount; i++) {
+            node.getStrings().get(i + globalCount);
+            var stringVariable = node.getStrings().get(i);
+            stringVariable.setOffset(i + globalCount);
+
+            s.writeByte(0);
+            s.writeInt(stringVariable.getName().length());
+            s.writeString(stringVariable.getName());
+        }
+//        for (Variable variable : node.getGlobals()) {
+//            s.writeByte(0);
+//            s.writeInt(8);
+//            s.writeLong(0);
+//            switch (variable.getType().getType()) {
+//                case STRING -> {
+//                    if (variable.getExpr() instanceof LiteralNode literal && literal.getType().equals(TypeVal.STRING)) {
+//                        var string = (String) literal.getValue();
+//                        s.writeInt(string.length());
+//                        s.writeString(string);
+//                    }
+//                }
+//                case UINT, DOUBLE -> {
+//
+//                }
+//                default -> throw new UnreachableException();
+//            }
+//        }
+        var startBlock = new BlockNode(node.getGlobals(), List.of());
+        node.getFunctions().add(new Function("_start", new Type(TypeVal.VOID), List.of(), List.of(), startBlock));
+        for (int i = 0; i < funcCount; i++) {
+            var function = node.getFunctions().get(i);
+            function.setOffset(i + globalCount + stringCount);
             s.writeByte(0);
             s.writeInt(function.getName().length());
             s.writeString(function.getName());
         }
-
         node.getFunctions().forEach(x -> x.accept(this));
     }
 
     @Override
     public void visit(AssignNode node) {
-        var instructions = new Arrayvoid();
-        instructions.addAll(node.getLhs().accept(this));
-        instructions.addAll(node.getRhs().accept(this));
-        instructions.add(new Instruction(Instruction.STORE));
+        node.getLhs().accept(this);
+        node.getRhs().accept(this);
+        s.write(Instruction.STORE64);
     }
 
     @Override
@@ -148,14 +171,20 @@ public class IRGenerator implements Visitor {
             s.write(Instruction.STACKALLOC, 1);
         }
         node.getArgs().forEach(x -> x.accept(this));
-        // TODO CALL
+        s.write(Instruction.CALL, node.getFunction().getOffset());
+    }
+
+    @Override
+    public void visit(STLFunctionCallNode node) {
+        node.getArgs().forEach(x -> x.accept(this));
+        s.write(Instruction.CALLNAME, node.getFunction().getOffset());
     }
 
     @Override
     public void visit(LiteralNode node) {
-        var instruction = switch (node.getType().getType()) {
-            case UINT -> new Instruction(Instruction.PUSH, (long) node.getValue());
-            case DOUBLE -> new Instruction(Instruction.PUSH, (long) node.getValue());
+        switch (node.getType().getType()) {
+            case UINT -> s.write(Instruction.PUSH, Long.valueOf(node.getValue()));
+            case DOUBLE -> s.write(Instruction.PUSH, Double.doubleToLongBits(Double.valueOf(node.getValue())));
             default -> throw new UnreachableException();
         };
     }
@@ -180,7 +209,12 @@ public class IRGenerator implements Visitor {
             case ARG -> Instruction.ARGA;
             case GLOBAL -> Instruction.GLOBA;
         }, off);
-        instructions.add(new Instruction(Instruction.LOAD));
+        s.write(Instruction.LOAD64);
+    }
+
+    @Override
+    public void visit(StringNode node) {
+        s.write(Instruction.GLOBA, node.getVariable().getOffset());
     }
 
     @Override

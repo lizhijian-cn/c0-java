@@ -3,6 +3,7 @@ package c0.parser;
 import c0.ast.expr.LiteralNode;
 import c0.entity.Entity;
 import c0.entity.Function;
+import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.parser.scope.Scope;
 import c0.type.Type;
@@ -37,6 +38,9 @@ public class VariableChecker {
         current().add(entity);
     }
 
+    void add(StringVariable string) {
+        top().add(string);
+    }
     Variable addString(LiteralNode string) {
         if (string.getType().equals(TypeVal.STRING)) {
             throw new RuntimeException("expected string");
@@ -45,6 +49,7 @@ public class VariableChecker {
         top().add(v);
         return v;
     }
+
     Function getFunction(String name) {
         var entity = top().get(name);
         if (entity.isPresent() && entity.get() instanceof Function function) {

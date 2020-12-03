@@ -10,6 +10,7 @@ public enum Instruction {
     LOCA(0X0A),
     ARGA(0X0B),
     GLOBA(0X0C),
+    LOAD64(0X13),
     STORE64(0X17),
     STACKALLOC(0X1A),
     ADDI(0X20),

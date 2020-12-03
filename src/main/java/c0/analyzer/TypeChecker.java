@@ -7,6 +7,7 @@ import c0.ast.stmt.EmptyNode;
 import c0.ast.stmt.ExprStmtNode;
 import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
+import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.type.Type;
 import c0.type.TypeVal;
@@ -17,7 +18,6 @@ import c0.type.TypeVal;
  * variable type void
  */
 public class TypeChecker implements Visitor {
-
     void expectEquals(Type a, Type b) {
         if (!a.equals(b))
             throw new RuntimeException(String.format("expected %s, but got %s", a, b));
@@ -120,9 +120,25 @@ public class TypeChecker implements Visitor {
             throw new RuntimeException("argument number error");
         }
         for (int i = 0; i < params.size(); i++) {
-            expectEquals(params.get(i).getType(), args.get(0).getType());
+            expectEquals(params.get(i).getType(), args.get(i).getType());
         }
         node.setType(node.getFunction().getReturnType());
+    }
+
+    @Override
+    public void visit(STLFunctionCallNode node) {
+        // TODO ARGUMENT CHECK
+        switch (node.getFunction().getName()) {
+            case "getint", "getchar" -> {
+                node.setType(new Type(TypeVal.UINT));
+            }
+            case "getdouble" -> {
+                node.setType(new Type(TypeVal.DOUBLE));
+            }
+            default -> {
+                node.setType(new Type(TypeVal.VOID));
+            }
+        }
     }
 
     @Override
@@ -140,5 +156,11 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(VariableNode node) {
         node.setType(node.getVariable().getType());
+    }
+
+    @Override
+    public void visit(StringNode node) {
+        node.getVariable().accept(this);
+        node.setType(new Type(TypeVal.STRING));
     }
 }

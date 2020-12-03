@@ -92,17 +92,17 @@ public class Lexer extends RichIterator<Token> {
                         while (charIter.check(Character::isDigit)) {
                             sb.append(charIter.next());
                         }
-                        return new Token(TokenType.DOUBLE_LITERAL, Double.parseDouble(sb.toString()));
+                        return new Token(TokenType.DOUBLE_LITERAL, sb.toString());
                     } else {
                         throw new RuntimeException("invalid double");
                     }
                 }
-                return new Token(TokenType.DOUBLE_LITERAL, Double.parseDouble(sb.toString()));
+                return new Token(TokenType.DOUBLE_LITERAL, sb.toString());
             } else {
                 throw new RuntimeException("invalid double");
             }
         }
-        return new Token(TokenType.UINT_LITERAL, Integer.parseUnsignedInt(sb.toString()));
+        return new Token(TokenType.UINT_LITERAL, sb.toString());
     }
 
     Optional<Character> lexSpecialOrLiteralChar() {
@@ -148,7 +148,7 @@ public class Lexer extends RichIterator<Token> {
         var op = lexSpecialOrLiteralChar();
         var value = op.orElseThrow(() -> new RuntimeException("char literal must not be empty"));
         charIter.expect('\'');
-        return new Token(TokenType.CHAR_LITERAL, value);
+        return new Token(TokenType.CHAR_LITERAL, Integer.valueOf((int) value).toString());
     }
 
     boolean isOperator(char ch) {

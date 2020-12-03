@@ -1,6 +1,7 @@
 package c0.parser;
 
 import c0.ast.expr.*;
+import c0.entity.StringVariable;
 import c0.lexer.Lexer;
 import c0.lexer.TokenType;
 import c0.type.Type;
@@ -45,7 +46,7 @@ public class ExprParser {
     ExprNode a() {
         // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
-            var name = lexer.next().getString();
+            var name = lexer.next().getValue();
             var variable = checker.getVariable(name);
             var lhs = new VariableNode(name, variable);
             if (lexer.test(TokenType.ASSIGN)) {
@@ -98,7 +99,7 @@ public class ExprParser {
     ExprNode e() {
         ExprNode expr = f();
         while (lexer.test(TokenType.AS)) {
-            var type = new Type(lexer.expect(TokenType.IDENT).getString());
+            var type = new Type(lexer.expect(TokenType.IDENT).getValue());
             expr = new CastNode(expr, type);
         }
         return expr;
@@ -114,7 +115,7 @@ public class ExprParser {
 
     ExprNode g() {
         if (lexer.check(TokenType.IDENT)) {
-            String name = lexer.next().getString();
+            String name = lexer.next().getValue();
             if (lexer.test(TokenType.L_PAREN)) {
                 var args = new ArrayList<ExprNode>();
                 if (!lexer.check(TokenType.R_PAREN)) {
@@ -124,6 +125,12 @@ public class ExprParser {
                     }
                 }
                 lexer.expect(TokenType.R_PAREN);
+                if (List.of(
+                        "getint", "getdouble", "getchar",
+                        "putint", "putdouble", "putstr", "putln")
+                        .contains(name)) {
+                    return new STLFunctionCallNode(new StringVariable(name), args);
+                }
                 return new FunctionCallNode(name, args, checker.getFunction(name));
             } else {
                 lexer.unread();
@@ -139,9 +146,9 @@ public class ExprParser {
             return expr;
         }
         if (lexer.check(TokenType.STRING_LITERAL)) {
-            var string = LiteralNode.FactoryConstructor(lexer.next());
-            var strVar = checker.addString(string);
-            return new VariableNode(strVar.getName(), strVar);
+            var string = new StringVariable(lexer.next().getValue());
+            checker.add(string);
+            return new StringNode(string);
         }
         if (lexer.check(x ->
                 List.of(TokenType.CHAR_LITERAL, TokenType.DOUBLE_LITERAL, TokenType.UINT_LITERAL)
@@ -149,7 +156,7 @@ public class ExprParser {
             return LiteralNode.FactoryConstructor(lexer.next());
         }
         if (lexer.check(TokenType.IDENT)) {
-            var name = lexer.next().getString();
+            var name = lexer.next().getValue();
             return new VariableNode(name, checker.getVariable(name));
         }
         throw new RuntimeException("unrecognized Token " + lexer.peek());

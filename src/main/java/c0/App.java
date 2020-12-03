@@ -6,6 +6,7 @@ import c0.analyzer.TypeChecker;
 import c0.lexer.CharIterator;
 import c0.lexer.Lexer;
 import c0.parser.Parser;
+import c0.util.RichDataOutputStream;
 
 import java.io.*;
 import java.util.List;
@@ -35,10 +36,8 @@ public class App {
         var dumper = new Dumper(System.out);
 //        ast.accept(dumper);
         var typeChecker = new TypeChecker();
-//        ast.accept(typeChecker);
-//        var irGenerator = new IRGenerator();
-////        ast.accept(irGenerator);
-//        var asmGenerator = new AsmGenerator(irGenerator.getIr(), new DataOutputStream(out));
-//        asmGenerator.generate();
+        ast.accept(typeChecker);
+        var irGenerator = new IRGenerator(new RichDataOutputStream(out));
+        ast.accept(irGenerator);
     }
 }

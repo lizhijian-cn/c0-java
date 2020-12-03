@@ -7,12 +7,17 @@ import c0.ast.stmt.EmptyNode;
 import c0.ast.stmt.ExprStmtNode;
 import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
+import c0.entity.StringVariable;
 import c0.entity.Variable;
 
 public interface Visitor {
     void visit(Variable variable);
 
     void visit(Function function);
+
+    default void visit(StringVariable string) {
+
+    }
 
     void visit(AST node);
 
@@ -24,11 +29,15 @@ public interface Visitor {
 
     void visit(FunctionCallNode node);
 
+    void visit(STLFunctionCallNode node);
+
     void visit(LiteralNode node);
 
     void visit(UnaryOpNode node);
 
     void visit(VariableNode node);
+
+    void visit(StringNode node);
 
     void visit(BlockNode node);
 

@@ -5,6 +5,7 @@ import c0.ast.expr.ExprNode;
 import c0.ast.expr.LiteralNode;
 import c0.ast.stmt.*;
 import c0.entity.Function;
+import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.lexer.Lexer;
 import c0.lexer.TokenType;
@@ -43,24 +44,28 @@ public class Parser {
         var scope = checker.pop();
         var functions = new ArrayList<Function>();
         var globals = new ArrayList<Variable>();
+        var strings = new ArrayList<StringVariable>();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variable.setVarType(Variable.VariableTypeOp.GLOBAL);
-                variable.setOffset(globals.size());
+//                variable.setOffset(globals.size());
                 globals.add(variable);
             }
             if (entity instanceof Function function) {
                 functions.add(function);
-                function.setOffset(functions.size());
+//                function.setOffset(functions.size());
+            }
+            if (entity instanceof StringVariable string) {
+                strings.add(string);
             }
         }
-        return new AST(functions, globals);
+        return new AST(functions, globals, strings);
     }
 
     // TODO: now only parse main function
     Function parseFunction() {
         lexer.expect(TokenType.FN);
-        var name = lexer.expect(TokenType.IDENT).getString();
+        var name = lexer.expect(TokenType.IDENT).getValue();
         var params = new ArrayList<Variable>();
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
@@ -71,13 +76,13 @@ public class Parser {
         }
         lexer.expect(TokenType.R_PAREN);
         lexer.expect(TokenType.ARROW);
-        var type = new Type(lexer.expect(TokenType.IDENT).getString());
+        var type = new Type(lexer.expect(TokenType.IDENT).getValue());
 
         var blockStmt = parseBlockStmt();
         var locals = blockStmt.getLocals();
-        for (int i = 0; i < locals.size(); i++) {
-            locals.get(i).setOffset(i);
-        }
+//        for (int i = 0; i < locals.size(); i++) {
+//            locals.get(i).setOffset(i);
+//        }
         return new Function(name, type, params, locals, blockStmt);
     }
 
@@ -86,10 +91,10 @@ public class Parser {
         if (lexer.test(TokenType.CONST)) {
             isConst = true;
         }
-        var name = lexer.expect(TokenType.IDENT).getString();
+        var name = lexer.expect(TokenType.IDENT).getValue();
         lexer.expect(TokenType.COLON);
-        var type = new Type(lexer.expect(TokenType.IDENT).getString());
-        var variable = new Variable(name, type, LiteralNode.defaultValue(type), isConst);
+        var type = new Type(lexer.expect(TokenType.IDENT).getValue());
+        var variable = new Variable(name, type, new LiteralNode(type), isConst);
         variable.setVarType(Variable.VariableTypeOp.ARG);
         return variable;
     }
@@ -101,9 +106,9 @@ public class Parser {
         ExprNode expr;
         if (lexer.test(TokenType.CONST)) {
             isConst = true;
-            name = lexer.expect(TokenType.IDENT).getString();
+            name = lexer.expect(TokenType.IDENT).getValue();
             lexer.expect(TokenType.COLON);
-            type = new Type(lexer.expect(TokenType.IDENT).getString());
+            type = new Type(lexer.expect(TokenType.IDENT).getValue());
             if (lexer.test(TokenType.ASSIGN)) {
                 expr = parseExpr();
             } else {
@@ -112,13 +117,13 @@ public class Parser {
         } else {
             isConst = false;
             lexer.expect(TokenType.LET);
-            name = lexer.expect(TokenType.IDENT).getString();
+            name = lexer.expect(TokenType.IDENT).getValue();
             lexer.expect(TokenType.COLON);
-            type = new Type(lexer.expect(TokenType.IDENT).getString());
+            type = new Type(lexer.expect(TokenType.IDENT).getValue());
             if (lexer.test(TokenType.ASSIGN)) {
                 expr = parseExpr();
             } else {
-                expr = LiteralNode.defaultValue(type);
+                expr = new LiteralNode(type);
             }
         }
         lexer.expect(TokenType.SEMICOLON);

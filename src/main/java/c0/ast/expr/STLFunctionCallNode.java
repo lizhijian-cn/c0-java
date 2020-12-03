@@ -1,22 +1,17 @@
-package c0.ast;
+package c0.ast.expr;
 
 import c0.analyzer.Visitor;
-import c0.ast.stmt.StmtNode;
-import c0.entity.Function;
 import c0.entity.StringVariable;
-import c0.entity.Variable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
 
-
 @Getter
 @AllArgsConstructor
-public class AST extends AbstractNode {
-    List<Function> functions;
-    List<Variable> globals;
-    List<StringVariable> strings;
+public class STLFunctionCallNode extends ExprNode {
+    StringVariable function;
+    List<ExprNode> args;
 
     @Override
     public void accept(Visitor v) {
