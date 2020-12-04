@@ -15,6 +15,7 @@ import java.util.LinkedList;
 public class VariableChecker {
     Deque<Scope> scopeStack;
     int stringCount;
+
     public VariableChecker() {
         this.scopeStack = new LinkedList<>();
         this.stringCount = 0;
@@ -41,6 +42,7 @@ public class VariableChecker {
     void add(StringVariable string) {
         top().add(string);
     }
+
     Variable addString(LiteralNode string) {
         if (string.getType().equals(TypeVal.STRING)) {
             throw new RuntimeException("expected string");

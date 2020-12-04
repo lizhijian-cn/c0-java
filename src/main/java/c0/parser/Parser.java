@@ -2,6 +2,7 @@ package c0.parser;
 
 import c0.ast.AST;
 import c0.ast.expr.ExprNode;
+import c0.ast.expr.FunctionCallNode;
 import c0.ast.expr.LiteralNode;
 import c0.ast.stmt.*;
 import c0.entity.Function;
@@ -10,8 +11,11 @@ import c0.entity.Variable;
 import c0.lexer.Lexer;
 import c0.lexer.TokenType;
 import c0.type.Type;
+import c0.type.TypeVal;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 public class Parser {
@@ -42,7 +46,7 @@ public class Parser {
         lexer.expect(TokenType.EOF);
 
         var scope = checker.pop();
-        var functions = new ArrayList<Function>();
+        var functions = new LinkedList<Function>();
         var globals = new ArrayList<Variable>();
         var strings = new ArrayList<StringVariable>();
         for (var entity : scope.getEntities().values()) {
@@ -59,6 +63,10 @@ public class Parser {
                 strings.add(string);
             }
         }
+        var main = functions.stream().filter(x -> x.getName().equals("main")).findAny().orElseThrow(() -> new RuntimeException("no main function"));
+        var _startBlockStmt = new BlockNode(List.of(), List.of(new ExprStmtNode(new FunctionCallNode("main", List.of(), main))));
+        var _start = new Function("_start", new Type(TypeVal.VOID), List.of(), globals, _startBlockStmt);
+        functions.addFirst(_start);
         return new AST(functions, globals, strings);
     }
 
@@ -80,9 +88,7 @@ public class Parser {
 
         var blockStmt = parseBlockStmt();
         var locals = blockStmt.getLocals();
-//        for (int i = 0; i < locals.size(); i++) {
-//            locals.get(i).setOffset(i);
-//        }
+
         return new Function(name, type, params, locals, blockStmt);
     }
 

@@ -1,33 +1,29 @@
 package c0.analyzer;
 
-import c0.analyzer.ir.IR;
-import c0.analyzer.ir.IRFunction;
-import c0.analyzer.ir.instruction.Instruction;
 import c0.ast.AST;
 import c0.ast.expr.*;
 import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.EmptyNode;
 import c0.ast.stmt.ExprStmtNode;
 import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 import c0.error.UnreachableException;
-import c0.type.Type;
 import c0.type.TypeVal;
 import c0.util.RichDataOutputStream;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.SneakyThrows;
 
 import java.nio.channels.NonReadableChannelException;
-import java.util.List;
 
 @Getter
-@AllArgsConstructor
 public class IRGenerator implements Visitor {
     int magic;
     int version;
-    int globalNumberCount;
+
+    int globalCount;
+    int stringCount;
+    int funcCount;
+
     RichDataOutputStream s;
 
     public IRGenerator(RichDataOutputStream s) {
@@ -35,6 +31,7 @@ public class IRGenerator implements Visitor {
         this.magic = 0x72303b3e;
         this.version = 1;
     }
+
     @Override
     public void visit(Variable variable) {
         if (variable.getType().equals(TypeVal.STRING)) {
@@ -52,10 +49,18 @@ public class IRGenerator implements Visitor {
 
     @Override
     public void visit(Function function) {
-        s.writeInt(function.getOffset());
+        s.writeInt(function.getOffset() + globalCount + stringCount);
         s.writeInt(function.getReturnType().equals(TypeVal.VOID) ? 0 : 1);
-        s.writeInt(function.getParams().size());
-        s.writeInt(function.getLocals().size());
+        int paramCount = function.getParams().size();
+        int localCount = function.getLocals().size();
+        for (int i = 0; i < paramCount; i++) {
+            function.getParams().get(i).setOffset(i);
+        }
+        for (int i = 0; i < localCount; i++) {
+            function.getLocals().get(i).setOffset(i);
+        }
+        s.writeInt(paramCount);
+        s.writeInt(localCount);
 
         s.setCache();
         function.getLocals().forEach(x -> x.accept(this));
@@ -71,8 +76,11 @@ public class IRGenerator implements Visitor {
     public void visit(AST node) {
         s.writeInt(magic);
         s.writeInt(version);
-        int globalCount = node.getGlobals().size(), stringCount = node.getStrings().size(), funcCount = node.getFunctions().size();
-        s.writeInt(globalCount + stringCount);
+
+        globalCount = node.getGlobals().size();
+        stringCount = node.getStrings().size();
+        funcCount = node.getFunctions().size();
+        s.writeInt(globalCount + stringCount + funcCount);
         for (int i = 0; i < globalCount; i++) {
             node.getGlobals().get(i).setOffset(i);
             s.writeByte(0);
@@ -80,7 +88,6 @@ public class IRGenerator implements Visitor {
             s.writeLong(0);
         }
         for (int i = 0; i < stringCount; i++) {
-            node.getStrings().get(i + globalCount);
             var stringVariable = node.getStrings().get(i);
             stringVariable.setOffset(i + globalCount);
 
@@ -88,33 +95,14 @@ public class IRGenerator implements Visitor {
             s.writeInt(stringVariable.getName().length());
             s.writeString(stringVariable.getName());
         }
-//        for (Variable variable : node.getGlobals()) {
-//            s.writeByte(0);
-//            s.writeInt(8);
-//            s.writeLong(0);
-//            switch (variable.getType().getType()) {
-//                case STRING -> {
-//                    if (variable.getExpr() instanceof LiteralNode literal && literal.getType().equals(TypeVal.STRING)) {
-//                        var string = (String) literal.getValue();
-//                        s.writeInt(string.length());
-//                        s.writeString(string);
-//                    }
-//                }
-//                case UINT, DOUBLE -> {
-//
-//                }
-//                default -> throw new UnreachableException();
-//            }
-//        }
-        var startBlock = new BlockNode(node.getGlobals(), List.of());
-        node.getFunctions().add(new Function("_start", new Type(TypeVal.VOID), List.of(), List.of(), startBlock));
         for (int i = 0; i < funcCount; i++) {
             var function = node.getFunctions().get(i);
-            function.setOffset(i + globalCount + stringCount);
+            function.setOffset(i);
             s.writeByte(0);
             s.writeInt(function.getName().length());
             s.writeString(function.getName());
         }
+        s.writeInt(funcCount);
         node.getFunctions().forEach(x -> x.accept(this));
     }
 
@@ -183,10 +171,10 @@ public class IRGenerator implements Visitor {
     @Override
     public void visit(LiteralNode node) {
         switch (node.getType().getType()) {
-            case UINT -> s.write(Instruction.PUSH, Long.valueOf(node.getValue()));
-            case DOUBLE -> s.write(Instruction.PUSH, Double.doubleToLongBits(Double.valueOf(node.getValue())));
+            case UINT -> s.write(Instruction.PUSH, Long.parseLong(node.getValue()));
+            case DOUBLE -> s.write(Instruction.PUSH, Double.doubleToLongBits(Double.parseDouble(node.getValue())));
             default -> throw new UnreachableException();
-        };
+        }
     }
 
     @Override
@@ -213,6 +201,14 @@ public class IRGenerator implements Visitor {
     }
 
     @Override
+    public void visit(ExprStmtNode node) {
+        node.getExpr().accept(this);
+        if (!node.getExpr().getType().equals(TypeVal.VOID)) {
+            s.write(Instruction.POPN, 1);
+        }
+    }
+
+    @Override
     public void visit(StringNode node) {
         s.write(Instruction.GLOBA, node.getVariable().getOffset());
     }
@@ -223,12 +219,9 @@ public class IRGenerator implements Visitor {
     }
 
     @Override
-    public void visit(ExprStmtNode node) {
-    }
-
-    @Override
     public void visit(ReturnNode node) {
         if (node.getReturnValue().isPresent()) {
+            s.write(Instruction.ARGA, 0);
             node.getReturnValue().get().accept(this);
             s.write(Instruction.STORE64);
         }

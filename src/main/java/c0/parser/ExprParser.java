@@ -7,7 +7,6 @@ import c0.lexer.TokenType;
 import c0.type.Type;
 import lombok.AllArgsConstructor;
 
-import java.nio.file.ClosedDirectoryStreamException;
 import java.util.ArrayList;
 import java.util.List;
 

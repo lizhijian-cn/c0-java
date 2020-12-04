@@ -9,7 +9,6 @@ import c0.parser.Parser;
 import c0.util.RichDataOutputStream;
 
 import java.io.*;
-import java.util.List;
 
 public class App {
     public static void main(String[] args) {
@@ -23,7 +22,7 @@ public class App {
         OutputStream out;
         try {
             in = new FileInputStream(filename);
-            out = new FileOutputStream(tok[0].concat(".o0"));
+            out = new FileOutputStream(tok[0].concat("my").concat(".o0"));
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
             return;
@@ -34,7 +33,7 @@ public class App {
         var parser = new Parser(lexer);
         var ast = parser.parse();
         var dumper = new Dumper(System.out);
-//        ast.accept(dumper);
+        ast.accept(dumper);
         var typeChecker = new TypeChecker();
         ast.accept(typeChecker);
         var irGenerator = new IRGenerator(new RichDataOutputStream(out));

@@ -3,11 +3,8 @@ package c0.analyzer;
 import c0.ast.AST;
 import c0.ast.expr.*;
 import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.EmptyNode;
-import c0.ast.stmt.ExprStmtNode;
 import c0.ast.stmt.ReturnNode;
 import c0.entity.Function;
-import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.type.Type;
 import c0.type.TypeVal;
@@ -40,8 +37,10 @@ public class TypeChecker implements Visitor {
         expectNot(type, TypeVal.VOID);
         expectNot(type, TypeVal.STRING);
     }
+
     @Override
     public void visit(Variable variable) {
+        variable.getExpr().accept(this);
         expectNot(variable.getType(), TypeVal.VOID);
         expectNot(variable.getType(), TypeVal.BOOL);
     }
@@ -80,6 +79,8 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(AssignNode node) {
+        node.getLhs().accept(this);
+        node.getRhs().accept(this);
         expectEquals(node.getLhs().getType(), node.getRhs().getType());
         node.setType(new Type(TypeVal.VOID));
     }

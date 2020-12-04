@@ -1,4 +1,4 @@
-package c0.analyzer.ir.instruction;
+package c0.analyzer;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,6 +7,7 @@ import lombok.Getter;
 @Getter
 public enum Instruction {
     PUSH(0X01),
+    POPN(0X3),
     LOCA(0X0A),
     ARGA(0X0B),
     GLOBA(0X0C),

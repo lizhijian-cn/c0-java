@@ -1,10 +1,6 @@
-let i: int = 0;
-const a: int = 2;
-
+fn f(a: int) -> int {
+    return a + 1;
+}
 fn main() -> int {
-    let j: int;
-    let d: double = 1.2432e2;
-    j = a;
-    const b: int = i + j;
-    return -i + j - a * b;
+    return f(1);
 }

@@ -1,6 +1,6 @@
 package c0.util;
 
-import c0.analyzer.ir.instruction.Instruction;
+import c0.analyzer.Instruction;
 import lombok.SneakyThrows;
 
 import java.io.ByteArrayOutputStream;
