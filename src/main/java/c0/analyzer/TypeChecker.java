@@ -68,7 +68,6 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(BlockNode node) {
-        node.getLocals().forEach(x -> x.accept(this));
         node.getStmts().forEach(x -> x.accept(this));
     }
 
@@ -128,17 +127,12 @@ public class TypeChecker implements Visitor {
 
     @Override
     public void visit(STLFunctionCallNode node) {
+        node.getArgs().forEach(x -> x.accept(this));
         // TODO ARGUMENT CHECK
         switch (node.getFunction().getName()) {
-            case "getint", "getchar" -> {
-                node.setType(new Type(TypeVal.UINT));
-            }
-            case "getdouble" -> {
-                node.setType(new Type(TypeVal.DOUBLE));
-            }
-            default -> {
-                node.setType(new Type(TypeVal.VOID));
-            }
+            case "getint", "getchar" -> node.setType(new Type(TypeVal.UINT));
+            case "getdouble" -> node.setType(new Type(TypeVal.DOUBLE));
+            default -> node.setType(new Type(TypeVal.VOID));
         }
     }
 

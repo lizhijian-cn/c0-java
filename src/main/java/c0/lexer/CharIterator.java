@@ -19,6 +19,6 @@ public class CharIterator extends RichIterator<Character> {
     @SneakyThrows
     public Optional<Character> getNext() {
         var next = br.read();
-        return next != -1 ? Optional.of(Character.valueOf((char) next)) : Optional.empty();
+        return next != -1 ? Optional.of((char) next) : Optional.empty();
     }
 }

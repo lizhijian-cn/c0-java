@@ -46,9 +46,9 @@ public class ExprParser {
         // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
             var name = lexer.next().getValue();
-            var variable = checker.getVariable(name);
-            var lhs = new VariableNode(name, variable);
             if (lexer.test(TokenType.ASSIGN)) {
+                var variable = checker.getVariable(name);
+                var lhs = new VariableNode(name, variable);
                 if (variable.isConst()) {
                     throw new RuntimeException("constant must not be assigned");
                 }
@@ -128,7 +128,9 @@ public class ExprParser {
                         "getint", "getdouble", "getchar",
                         "putint", "putdouble", "putstr", "putln")
                         .contains(name)) {
-                    return new STLFunctionCallNode(new StringVariable(name), args);
+                    var stlFunc = new StringVariable(name);
+                    checker.add(stlFunc);
+                    return new STLFunctionCallNode(stlFunc, args);
                 }
                 return new FunctionCallNode(name, args, checker.getFunction(name));
             } else {

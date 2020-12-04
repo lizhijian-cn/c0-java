@@ -54,7 +54,7 @@ public class IRGenerator implements Visitor {
         int paramCount = function.getParams().size();
         int localCount = function.getLocals().size();
         for (int i = 0; i < paramCount; i++) {
-            function.getParams().get(i).setOffset(i);
+            function.getParams().get(i).setOffset(i + 1);
         }
         for (int i = 0; i < localCount; i++) {
             function.getLocals().get(i).setOffset(i);
@@ -164,6 +164,9 @@ public class IRGenerator implements Visitor {
 
     @Override
     public void visit(STLFunctionCallNode node) {
+        if (!node.getType().equals(TypeVal.VOID)) {
+            s.write(Instruction.STACKALLOC, 1);
+        }
         node.getArgs().forEach(x -> x.accept(this));
         s.write(Instruction.CALLNAME, node.getFunction().getOffset());
     }

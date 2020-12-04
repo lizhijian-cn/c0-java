@@ -28,7 +28,7 @@ public enum Instruction {
     FTOI(0X37),
     CALL(0X48),
     RET(0X49),
-    CALLNAME(0X50);
+    CALLNAME(0X4a);
 
     int code;
 }

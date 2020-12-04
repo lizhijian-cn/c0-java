@@ -8,6 +8,7 @@ import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.StringVariable;
 import c0.entity.Variable;
+import c0.error.UnreachableException;
 import c0.lexer.Lexer;
 import c0.lexer.TokenType;
 import c0.type.Type;
@@ -64,7 +65,7 @@ public class Parser {
             }
         }
         var main = functions.stream().filter(x -> x.getName().equals("main")).findAny().orElseThrow(() -> new RuntimeException("no main function"));
-        var _startBlockStmt = new BlockNode(List.of(), List.of(new ExprStmtNode(new FunctionCallNode("main", List.of(), main))));
+        var _startBlockStmt = new BlockNode(List.of(new ExprStmtNode(new FunctionCallNode("main", List.of(), main))));
         var _start = new Function("_start", new Type(TypeVal.VOID), List.of(), globals, _startBlockStmt);
         functions.addFirst(_start);
         return new AST(functions, globals, strings);
@@ -72,14 +73,15 @@ public class Parser {
 
     // TODO: now only parse main function
     Function parseFunction() {
+        checker.push();
         lexer.expect(TokenType.FN);
         var name = lexer.expect(TokenType.IDENT).getValue();
-        var params = new ArrayList<Variable>();
+//        var params = new ArrayList<Variable>();
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
-            params.add(parseParam());
+            checker.add(parseParam());
             while (lexer.test(TokenType.COMMA)) {
-                params.add(parseParam());
+                checker.add(parseParam());
             }
         }
         lexer.expect(TokenType.R_PAREN);
@@ -87,8 +89,18 @@ public class Parser {
         var type = new Type(lexer.expect(TokenType.IDENT).getValue());
 
         var blockStmt = parseBlockStmt();
-        var locals = blockStmt.getLocals();
-
+        var locals = new ArrayList<Variable>();
+        var params = new ArrayList<Variable>();
+        var scope = checker.pop();
+        for (var entity : scope.getEntities().values()) {
+            if (entity instanceof Variable variable) {
+                switch (variable.getVarType()) {
+                    case LOCAL -> locals.add(variable);
+                    case ARG -> params.add(variable);
+                    default -> throw new UnreachableException();
+                }
+            }
+        }
         return new Function(name, type, params, locals, blockStmt);
     }
 
@@ -144,7 +156,6 @@ public class Parser {
         checker.push();
         lexer.expect(TokenType.L_BRACE);
 
-        var locals = new ArrayList<Variable>();
         var stmts = new ArrayList<StmtNode>();
         boolean exit = false;
         while (!exit) {
@@ -156,7 +167,6 @@ public class Parser {
                 case LET, CONST -> checker.add(parseVariable());
                 case L_PAREN -> {
                     var blockStmt = parseBlockStmt();
-                    locals.addAll(blockStmt.getLocals());
                     stmts.add(blockStmt);
                 }
                 case RETURN -> stmts.add(parseReturnStmt());
@@ -168,11 +178,9 @@ public class Parser {
 
         var scope = checker.pop();
         for (var entity : scope.getEntities().values()) {
-            if (entity instanceof Variable variable) {
-                locals.add(variable);
-            }
+            checker.add(entity);
         }
-        return new BlockNode(locals, stmts);
+        return new BlockNode(stmts);
     }
 
     ReturnNode parseReturnStmt() {

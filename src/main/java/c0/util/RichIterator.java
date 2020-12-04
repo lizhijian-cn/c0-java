@@ -6,15 +6,17 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public abstract class RichIterator<T> implements Iterator<T> {
-    protected Optional<T> bf;
-    protected T stored;
-    protected boolean isUnread = false;
+    private Optional<T> bf;
+    private T stored;
+    private boolean isUnread = false;
+    private boolean init = false;
 
     protected abstract Optional<T> getNext();
 
     @Override
     public boolean hasNext() {
-        if (bf == null) {
+        if (!init) {
+            init = true;
             bf = getNext();
         }
         if (isUnread) {
@@ -25,7 +27,8 @@ public abstract class RichIterator<T> implements Iterator<T> {
 
     @Override
     public T next() {
-        if (bf == null) {
+        if (!init) {
+            init = true;
             bf = getNext();
         }
         if (isUnread) {
@@ -38,7 +41,8 @@ public abstract class RichIterator<T> implements Iterator<T> {
     }
 
     public T peek() {
-        if (bf == null) {
+        if (!init) {
+            init = true;
             bf = getNext();
         }
         if (isUnread) {

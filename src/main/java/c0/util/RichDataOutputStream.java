@@ -49,11 +49,6 @@ public class RichDataOutputStream {
     }
 
     @SneakyThrows
-    public void writeDouble(double v) {
-        s.writeDouble(v);
-    }
-
-    @SneakyThrows
     public void writeString(String s) {
         this.s.writeBytes(s);
     }
