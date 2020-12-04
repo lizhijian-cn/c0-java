@@ -18,11 +18,15 @@ public class App {
             System.err.printf("unrecognized extension: %s\n", tok[1]);
             return;
         }
+        var outFileName = tok[0].concat(".o0");
+        if (args.length == 3) {
+            outFileName = args[2];
+        }
         InputStream in;
         OutputStream out;
         try {
             in = new FileInputStream(filename);
-            out = new FileOutputStream(tok[0].concat("my").concat(".o0"));
+            out = new FileOutputStream(outFileName);
         } catch (FileNotFoundException e) {
             System.err.println(e.getMessage());
             return;
@@ -32,8 +36,8 @@ public class App {
         var lexer = new Lexer(charIter);
         var parser = new Parser(lexer);
         var ast = parser.parse();
-        var dumper = new Dumper(System.out);
-        ast.accept(dumper);
+//        var dumper = new Dumper(System.out);
+//        ast.accept(dumper);
         var typeChecker = new TypeChecker();
         ast.accept(typeChecker);
         var irGenerator = new IRGenerator(new RichDataOutputStream(out));
