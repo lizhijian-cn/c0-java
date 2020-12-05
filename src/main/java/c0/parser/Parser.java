@@ -187,6 +187,7 @@ public class Parser {
                 case CONTINUE -> {
                     lexer.next();
                     lexer.expect(TokenType.SEMICOLON);
+                    stmts.add(new ContinueNode());
                 }
                 case R_BRACE, EOF -> exit = true;
                 default -> stmts.add(parseExprStmt());
