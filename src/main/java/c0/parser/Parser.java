@@ -1,9 +1,7 @@
 package c0.parser;
 
 import c0.ast.AST;
-import c0.ast.expr.ExprNode;
-import c0.ast.expr.FunctionCallNode;
-import c0.ast.expr.LiteralNode;
+import c0.ast.expr.*;
 import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.Variable;
@@ -166,7 +164,20 @@ public class Parser {
                     lexer.next();
                     stmts.add(new EmptyNode());
                 }
-                case LET, CONST -> checker.add(parseVariable());
+                case LET, CONST -> {
+                    // must reassign when a local variable declared
+                    // while 1 {
+                    //     let i: int = a + b;
+                    //     // change a or b, so i need to be changed every loop
+                    // }
+                    // TODO: its better to create a new node named DeclNode
+                    var variable = parseVariable();
+                    checker.add(variable);
+                    stmts.add(new ExprStmtNode(
+                            new AssignNode(
+                                    new VariableNode(variable.getName(), variable),
+                                    variable.getExpr())));
+                }
                 case L_BRACE -> {
                     var blockStmt = parseBlockStmt();
                     stmts.add(blockStmt);
