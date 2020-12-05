@@ -13,6 +13,7 @@ import c0.lexer.TokenType;
 import c0.type.Type;
 import c0.type.TypeVal;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -166,7 +167,7 @@ public class Parser {
                     stmts.add(new EmptyNode());
                 }
                 case LET, CONST -> checker.add(parseVariable());
-                case L_PAREN -> {
+                case L_BRACE -> {
                     var blockStmt = parseBlockStmt();
                     stmts.add(blockStmt);
                 }
@@ -195,6 +196,7 @@ public class Parser {
 
         var scope = checker.pop();
         for (var entity : scope.getEntities().values()) {
+            entity.setName(LocalTime.now().toString());
             checker.add(entity);
         }
         return new BlockNode(stmts);
