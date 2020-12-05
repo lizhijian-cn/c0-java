@@ -1,6 +1,5 @@
 package c0;
 
-import c0.analyzer.Dumper;
 import c0.analyzer.TypeChecker;
 import c0.analyzer.ir.IRGenerator;
 import c0.lexer.CharIterator;
@@ -8,7 +7,6 @@ import c0.lexer.Lexer;
 import c0.parser.Parser;
 
 import java.io.*;
-import java.util.Arrays;
 
 public class App {
     public static void main(String[] args) {

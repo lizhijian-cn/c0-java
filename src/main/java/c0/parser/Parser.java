@@ -6,7 +6,6 @@ import c0.ast.expr.FunctionCallNode;
 import c0.ast.expr.LiteralNode;
 import c0.ast.stmt.*;
 import c0.entity.Function;
-import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.error.UnreachableException;
 import c0.lexer.Lexer;
@@ -39,7 +38,9 @@ public class Parser {
         boolean exit = false;
         while (!exit) {
             switch (lexer.peek().getTokenType()) {
-                case FN -> checker.add(parseFunction());
+                // add undefined function to scope before parsing body of function to support recursion
+                // case FN -> checker.add(parseFunction());
+                case FN -> parseFunction();
                 case LET, CONST -> checker.add(parseVariable());
                 default -> exit = true;
             }
@@ -66,11 +67,17 @@ public class Parser {
         return new AST(functions, globals, strings);
     }
 
-    // TODO: now only parse main function
-    private Function parseFunction() {
-        checker.push();
+    /**
+     *
+     */
+    private void parseFunction() {
         lexer.expect(TokenType.FN);
         var name = lexer.expect(TokenType.IDENT).getValue();
+        var function = new Function(name);
+        checker.add(function);
+
+        checker.push();
+
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
             checker.add(parseParam());
@@ -95,7 +102,7 @@ public class Parser {
                 }
             }
         }
-        return new Function(name, type, params, locals, blockStmt);
+        checker.getFunction(name).set(type, params, locals, blockStmt);
     }
 
     private Variable parseParam() {
@@ -164,16 +171,7 @@ public class Parser {
                     stmts.add(blockStmt);
                 }
                 case RETURN -> stmts.add(parseReturnStmt());
-                case IF -> {
-                    lexer.next();
-                    var cond = parseExpr();
-                    var thenBody = parseBlockStmt();
-                    Optional<BlockNode> elseBody = Optional.empty();
-                    if (lexer.test(TokenType.ELSE)) {
-                        elseBody = Optional.of(parseBlockStmt());
-                    }
-                    stmts.add(new IfNode(cond, thenBody, elseBody));
-                }
+                case IF -> stmts.add(parseIfStmt());
                 case WHILE -> {
                     lexer.next();
                     var cond = parseExpr();
@@ -217,5 +215,20 @@ public class Parser {
         ExprNode expr = parseExpr();
         lexer.expect(TokenType.SEMICOLON);
         return new ExprStmtNode(expr);
+    }
+
+    private IfNode parseIfStmt() {
+        lexer.expect(TokenType.IF);
+        var cond = parseExpr();
+        var thenBody = parseBlockStmt();
+        Optional<StmtNode> elseBody = Optional.empty();
+        if (lexer.test(TokenType.ELSE)) {
+            if (lexer.check(TokenType.IF)) {
+                elseBody = Optional.of(parseIfStmt());
+            } else {
+                elseBody = Optional.of(parseBlockStmt());
+            }
+        }
+        return new IfNode(cond, thenBody, elseBody);
     }
 }

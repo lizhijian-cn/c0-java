@@ -12,7 +12,7 @@ import java.util.Optional;
 public class IfNode extends StmtNode {
     ExprNode cond;
     BlockNode thenBody;
-    Optional<BlockNode> elseBody;
+    Optional<StmtNode> elseBody;
 
     @Override
     public void accept(Visitor v) {

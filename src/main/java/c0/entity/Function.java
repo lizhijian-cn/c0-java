@@ -14,8 +14,16 @@ public class Function extends Entity {
     List<Variable> locals;
     BlockNode blockStmt;
 
+    public Function(String name) {
+        super(name);
+    }
+
     public Function(String name, Type type, List<Variable> args, List<Variable> locals, BlockNode blockStmt) {
         super(name);
+        set(type, args, locals, blockStmt);
+    }
+
+    public void set(Type type, List<Variable> args, List<Variable> locals, BlockNode blockStmt) {
         this.returnType = type;
         this.params = args;
         this.locals = locals;
