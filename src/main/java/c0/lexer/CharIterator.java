@@ -1,6 +1,6 @@
 package c0.lexer;
 
-import c0.util.RichIterator;
+import c0.RichIterator;
 import lombok.SneakyThrows;
 
 import java.io.BufferedReader;

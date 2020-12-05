@@ -3,10 +3,7 @@ package c0.analyzer;
 import c0.ast.AST;
 import c0.ast.AbstractNode;
 import c0.ast.expr.*;
-import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.EmptyNode;
-import c0.ast.stmt.ExprStmtNode;
-import c0.ast.stmt.ReturnNode;
+import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.StringVariable;
 import c0.entity.Variable;
@@ -186,5 +183,22 @@ public class Dumper implements Visitor {
         } else {
             printMember("return value", "void");
         }
+    }
+
+    @Override
+    public void visit(IfNode node) {
+        printClassName(node);
+        printMember("cond", node.getCond());
+        printMember("then", node.getThenBody());
+        if (node.getElseBody().isPresent()) {
+            printMember("else", node.getElseBody().get());
+        }
+    }
+
+    @Override
+    public void visit(WhileNode node) {
+        printClassName(node);
+        printMember("cond", node.getCond());
+        printMember("body", node.getBody());
     }
 }

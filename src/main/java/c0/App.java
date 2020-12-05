@@ -1,12 +1,11 @@
 package c0;
 
-import c0.analyzer.Dumper;
-import c0.analyzer.IRGenerator;
+import c0.analyzer.ir.IRGenerator;
 import c0.analyzer.TypeChecker;
 import c0.lexer.CharIterator;
 import c0.lexer.Lexer;
 import c0.parser.Parser;
-import c0.util.RichDataOutputStream;
+import c0.analyzer.ir.RichDataOutputStream;
 
 import java.io.*;
 

@@ -1,7 +1,7 @@
 package c0.lexer;
 
 import c0.error.UnreachableException;
-import c0.util.RichIterator;
+import c0.RichIterator;
 
 import java.nio.channels.NonReadableChannelException;
 import java.util.LinkedHashMap;
@@ -68,6 +68,11 @@ public class Lexer extends RichIterator<Token> {
             case "as" -> new Token(TokenType.AS);
             case "fn" -> new Token(TokenType.FN);
             case "return" -> new Token(TokenType.RETURN);
+            case "if" -> new Token(TokenType.IF);
+            case "else" -> new Token(TokenType.ELSE);
+            case "while" -> new Token(TokenType.WHILE);
+            case "continue" -> new Token(TokenType.CONTINUE);
+            case "break" -> new Token(TokenType.BREAK);
             default -> new Token(TokenType.IDENT, value);
         };
     }

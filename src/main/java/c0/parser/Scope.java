@@ -1,4 +1,4 @@
-package c0.parser.scope;
+package c0.parser;
 
 import c0.entity.Entity;
 import lombok.Getter;
