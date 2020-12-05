@@ -201,4 +201,14 @@ public class Dumper implements Visitor {
         printMember("cond", node.getCond());
         printMember("body", node.getBody());
     }
+
+    @Override
+    public void visit(ContinueNode node) {
+        printClassName(node);
+    }
+
+    @Override
+    public void visit(BreakNode node) {
+        printClassName(node);
+    }
 }

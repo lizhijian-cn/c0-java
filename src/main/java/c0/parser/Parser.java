@@ -63,6 +63,9 @@ public class Parser {
             }
         }
         var main = functions.stream().filter(x -> x.getName().equals("main")).findAny().orElseThrow(() -> new RuntimeException("no main function"));
+        if (!main.getReturnType().equals(TypeVal.UINT)) {
+            throw new RuntimeException("main function must return int");
+        }
         var _startBlockStmt = new BlockNode(List.of(new ExprStmtNode(new FunctionCallNode("main", List.of(), main))));
         var _start = new Function("_start", new Type(TypeVal.VOID), List.of(), globals, _startBlockStmt);
         functions.addFirst(_start);
