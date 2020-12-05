@@ -23,8 +23,8 @@ public class Lexer extends RichIterator<Token> {
                 Character::isDigit, this::lexUIntOrDouble,
                 ch -> ch.equals('"'), this::lexString,
                 ch -> ch.equals('\''), this::lexChar,
-                this::isOperator, this::lexOperator
-                // TODO lexComment
+                this::isOperator, this::lexOperator,
+                ch -> ch.equals('/'), this::lexComment
         ));
     }
 
@@ -202,5 +202,14 @@ public class Lexer extends RichIterator<Token> {
             case ';' -> new Token(TokenType.SEMICOLON);
             default -> throw new UnreachableException();
         };
+    }
+
+    private Token lexComment() {
+        charIter.next();
+        charIter.expect('/');
+        while (charIter.check(x -> !x.equals('\n'))) {
+            charIter.next();
+        }
+        return getNext().orElseThrow(NonReadableChannelException::new);
     }
 }
