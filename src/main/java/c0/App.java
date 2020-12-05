@@ -8,6 +8,7 @@ import c0.lexer.Lexer;
 import c0.parser.Parser;
 
 import java.io.*;
+import java.util.Arrays;
 
 public class App {
     public static void main(String[] args) {
@@ -15,7 +16,7 @@ public class App {
         var tok = filename.split("\\.");
         if (!tok[1].equals("c0")) {
             System.err.printf("unrecognized extension: %s\n", tok[1]);
-            return;
+            System.exit(1);
         }
         var outFileName = tok[0].concat(".o0");
         if (args.length == 3) {
@@ -36,14 +37,14 @@ public class App {
             var lexer = new Lexer(charIter);
             var parser = new Parser(lexer);
             var ast = parser.parse();
-            var dumper = new Dumper(System.out);
-            ast.accept(dumper);
+//            var dumper = new Dumper(System.out);
+//            ast.accept(dumper);
             var typeChecker = new TypeChecker();
             ast.accept(typeChecker);
             var irGenerator = new IRGenerator(out);
             ast.accept(irGenerator);
         } catch (Exception e) {
-            System.err.println("error: " + e.getMessage());
+            e.printStackTrace(System.err);
             System.exit(1);
         }
 

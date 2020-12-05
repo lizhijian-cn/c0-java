@@ -49,7 +49,7 @@ public class Parser {
         var scope = checker.pop();
         var functions = new LinkedList<Function>();
         var globals = new ArrayList<Variable>();
-        var strings = new ArrayList<StringVariable>();
+        var strings = checker.getStrings();
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variable.setVarType(Variable.VariableTypeOp.GLOBAL);
@@ -58,14 +58,8 @@ public class Parser {
             if (entity instanceof Function function) {
                 functions.add(function);
             }
-            if (entity instanceof StringVariable string) {
-                strings.add(string);
-            }
         }
         var main = functions.stream().filter(x -> x.getName().equals("main")).findAny().orElseThrow(() -> new RuntimeException("no main function"));
-        if (!main.getReturnType().equals(TypeVal.UINT)) {
-            throw new RuntimeException("main function must return int");
-        }
         var _startBlockStmt = new BlockNode(List.of(new ExprStmtNode(new FunctionCallNode("main", List.of(), main))));
         var _start = new Function("_start", new Type(TypeVal.VOID), List.of(), globals, _startBlockStmt);
         functions.addFirst(_start);

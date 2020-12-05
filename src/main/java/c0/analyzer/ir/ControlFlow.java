@@ -48,6 +48,7 @@ public class ControlFlow {
         operands.clear();
         breakStack.clear();
         continueStack.clear();
+        jumpers.clear();
     }
 
     @SneakyThrows

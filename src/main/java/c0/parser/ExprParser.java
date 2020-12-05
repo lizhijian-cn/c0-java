@@ -126,7 +126,7 @@ class ExprParser {
                 lexer.expect(TokenType.R_PAREN);
                 if (List.of(
                         "getint", "getdouble", "getchar",
-                        "putint", "putdouble", "putstr", "putln")
+                        "putint", "putchar", "putdouble", "putstr", "putln")
                         .contains(name)) {
                     var stlFunc = new StringVariable(name);
                     checker.add(stlFunc);

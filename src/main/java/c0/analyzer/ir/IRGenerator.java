@@ -70,6 +70,9 @@ public class IRGenerator implements Visitor {
 
         function.getLocals().forEach(x -> x.accept(this));
         function.getBlockStmt().accept(this);
+        if (!function.getName().equals("_start") && function.getReturnType().equals(TypeVal.VOID)) {
+            flow.write(Instruction.RET);
+        }
         s.writeInt(flow.getLine());
         flow.flush();
     }
@@ -255,7 +258,7 @@ public class IRGenerator implements Visitor {
 
     @Override
     public void visit(StringNode node) {
-        flow.write(Instruction.GLOBA, node.getVariable().getOffset());
+        flow.write(Instruction.PUSH, (long) node.getVariable().getOffset());
     }
 
     @Override

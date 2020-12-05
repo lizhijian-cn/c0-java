@@ -50,12 +50,14 @@ public class TypeChecker implements Visitor {
         function.getBlockStmt().accept(this);
         var returnType = function.getReturnType();
         for (var stmt : function.getBlockStmt().getStmts()) {
-            if (stmt instanceof ReturnNode returnStmt && returnStmt.getReturnValue().isPresent()) {
-                expectEquals(returnType, returnStmt.getReturnValue().get().getType());
-                return;
+            if (stmt instanceof ReturnNode returnStmt) {
+                if (returnStmt.getReturnValue().isEmpty()) {
+                    expect(returnType, TypeVal.VOID);
+                } else {
+                    expectEquals(returnType, returnStmt.getReturnValue().get().getType());
+                }
             }
         }
-        expect(returnType, TypeVal.VOID);
     }
 
     @Override

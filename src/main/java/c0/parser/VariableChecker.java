@@ -4,15 +4,21 @@ import c0.entity.Entity;
 import c0.entity.Function;
 import c0.entity.StringVariable;
 import c0.entity.Variable;
+import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.List;
 
 class VariableChecker {
     Deque<Scope> scopeStack;
+    @Getter
+    List<StringVariable> strings;
 
     VariableChecker() {
         this.scopeStack = new LinkedList<>();
+        this.strings = new ArrayList<>();
     }
 
     private Scope top() {
@@ -34,7 +40,7 @@ class VariableChecker {
     }
 
     void add(StringVariable string) {
-        top().add(string);
+        strings.add(string);
     }
 
     Function getFunction(String name) {
