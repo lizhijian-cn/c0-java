@@ -28,6 +28,7 @@ public class ControlFlow {
         return opcodes.size();
     }
 
+    // TODO: control flow check, may use dfs
     @SneakyThrows
     public void flush() {
         jumpers.forEach(Jumper::setBrOffset);
