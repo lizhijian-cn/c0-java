@@ -30,15 +30,21 @@ public class App {
             return;
         }
 
-        var charIter = new CharIterator(new InputStreamReader(in));
-        var lexer = new Lexer(charIter);
-        var parser = new Parser(lexer);
-        var ast = parser.parse();
+        try {
+            var charIter = new CharIterator(new InputStreamReader(in));
+            var lexer = new Lexer(charIter);
+            var parser = new Parser(lexer);
+            var ast = parser.parse();
 //        var dumper = new Dumper(System.out);
 //        ast.accept(dumper);
-        var typeChecker = new TypeChecker();
-        ast.accept(typeChecker);
-        var irGenerator = new IRGenerator(out);
-        ast.accept(irGenerator);
+            var typeChecker = new TypeChecker();
+            ast.accept(typeChecker);
+            var irGenerator = new IRGenerator(out);
+            ast.accept(irGenerator);
+        } catch (Exception e) {
+            System.err.println("error: " + e.getMessage());
+            System.exit(1);
+        }
+
     }
 }
