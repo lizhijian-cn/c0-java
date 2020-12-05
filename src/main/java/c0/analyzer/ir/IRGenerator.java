@@ -124,7 +124,7 @@ public class IRGenerator implements Visitor {
         node.getLeft().accept(this);
         node.getRight().accept(this);
 
-        if (node.getType().equals(TypeVal.UINT)) {
+        if (node.getLeft().getType().equals(TypeVal.UINT)) {
             switch (node.getOp()) {
                 case PLUS -> flow.write(Instruction.ADDI);
                 case MINUS -> flow.write(Instruction.SUBI);
