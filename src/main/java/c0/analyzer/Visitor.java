@@ -2,10 +2,7 @@ package c0.analyzer;
 
 import c0.ast.AST;
 import c0.ast.expr.*;
-import c0.ast.stmt.BlockNode;
-import c0.ast.stmt.EmptyNode;
-import c0.ast.stmt.ExprStmtNode;
-import c0.ast.stmt.ReturnNode;
+import c0.ast.stmt.*;
 import c0.entity.Function;
 import c0.entity.StringVariable;
 import c0.entity.Variable;
@@ -41,13 +38,19 @@ public interface Visitor {
 
     void visit(BlockNode node);
 
-    default void visit(EmptyNode node) {
-
-    }
+    default void visit(EmptyNode node) {}
 
     default void visit(ExprStmtNode node) {
         node.getExpr().accept(this);
     }
 
     void visit(ReturnNode node);
+
+    void visit(IfNode node);
+
+    void visit(WhileNode node);
+
+    default void visit(BreakNode node) {}
+
+    default void visit(ContinueNode node) {}
 }

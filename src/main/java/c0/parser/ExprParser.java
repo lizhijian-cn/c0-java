@@ -11,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-public class ExprParser {
-    Lexer lexer;
-    VariableChecker checker;
+class ExprParser {
+    private final Lexer lexer;
+    private final VariableChecker checker;
 
     /**
      * OPG
@@ -38,11 +38,11 @@ public class ExprParser {
      * H -> A, H | A
      * I -> (A) | id | literal
      */
-    public ExprNode parse() {
+    ExprNode parse() {
         return a();
     }
 
-    ExprNode a() {
+    private ExprNode a() {
         // TODO check if lhs is type
         if (lexer.check(TokenType.IDENT)) {
             var name = lexer.next().getValue();
@@ -61,7 +61,7 @@ public class ExprParser {
         return b();
     }
 
-    ExprNode b() {
+    private ExprNode b() {
         ExprNode left = c();
         while (lexer.check(x ->
                 List.of(TokenType.GT, TokenType.LT, TokenType.GE, TokenType.LE, TokenType.EQ, TokenType.NEQ)
@@ -73,7 +73,7 @@ public class ExprParser {
         return left;
     }
 
-    ExprNode c() {
+    private ExprNode c() {
         ExprNode left = d();
         while (lexer.check(x ->
                 List.of(TokenType.PLUS, TokenType.MINUS).contains(x.getTokenType()))) {
@@ -84,7 +84,7 @@ public class ExprParser {
         return left;
     }
 
-    ExprNode d() {
+    private ExprNode d() {
         ExprNode left = e();
         while (lexer.check(x ->
                 List.of(TokenType.MUL, TokenType.DIV).contains(x.getTokenType()))) {
@@ -95,7 +95,7 @@ public class ExprParser {
         return left;
     }
 
-    ExprNode e() {
+    private ExprNode e() {
         ExprNode expr = f();
         while (lexer.test(TokenType.AS)) {
             var type = new Type(lexer.expect(TokenType.IDENT).getValue());
@@ -104,7 +104,7 @@ public class ExprParser {
         return expr;
     }
 
-    ExprNode f() {
+    private ExprNode f() {
         if (lexer.test(TokenType.MINUS)) {
             ExprNode expr = f();
             return new UnaryOpNode(TokenType.MINUS, expr);
@@ -112,7 +112,7 @@ public class ExprParser {
         return g();
     }
 
-    ExprNode g() {
+    private ExprNode g() {
         if (lexer.check(TokenType.IDENT)) {
             String name = lexer.next().getValue();
             if (lexer.test(TokenType.L_PAREN)) {
@@ -140,7 +140,7 @@ public class ExprParser {
         return i();
     }
 
-    ExprNode i() {
+    private ExprNode i() {
         if (lexer.test(TokenType.L_PAREN)) {
             ExprNode expr = a();
             lexer.expect(TokenType.R_PAREN);

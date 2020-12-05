@@ -1,11 +1,10 @@
 package c0;
 
-import c0.analyzer.ir.IRGenerator;
 import c0.analyzer.TypeChecker;
+import c0.analyzer.ir.IRGenerator;
 import c0.lexer.CharIterator;
 import c0.lexer.Lexer;
 import c0.parser.Parser;
-import c0.analyzer.ir.RichDataOutputStream;
 
 import java.io.*;
 
@@ -39,7 +38,7 @@ public class App {
 //        ast.accept(dumper);
         var typeChecker = new TypeChecker();
         ast.accept(typeChecker);
-        var irGenerator = new IRGenerator(new RichDataOutputStream(out));
+        var irGenerator = new IRGenerator(out);
         ast.accept(irGenerator);
     }
 }

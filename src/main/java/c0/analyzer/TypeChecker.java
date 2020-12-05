@@ -3,11 +3,15 @@ package c0.analyzer;
 import c0.ast.AST;
 import c0.ast.expr.*;
 import c0.ast.stmt.BlockNode;
+import c0.ast.stmt.IfNode;
 import c0.ast.stmt.ReturnNode;
+import c0.ast.stmt.WhileNode;
 import c0.entity.Function;
 import c0.entity.Variable;
 import c0.type.Type;
 import c0.type.TypeVal;
+
+import java.util.Arrays;
 
 /**
  * void return
@@ -15,34 +19,28 @@ import c0.type.TypeVal;
  * variable type void
  */
 public class TypeChecker implements Visitor {
-    void expectEquals(Type a, Type b) {
+    private void expectEquals(Type a, Type b) {
         if (!a.equals(b))
             throw new RuntimeException(String.format("expected %s, but got %s", a, b));
     }
 
-    void expect(Type type, TypeVal typeVal) {
-        if (!type.equals(typeVal)) {
-            throw new RuntimeException(String.format("expected not %s", typeVal));
+    private void expect(Type type, TypeVal ...typeVal) {
+        if (Arrays.asList(typeVal).contains(type)) {
+            return;
         }
+        throw new RuntimeException(String.format("expected %s", Arrays.asList(typeVal)));
     }
 
-    void expectNot(Type type, TypeVal typeVal) {
-        if (type.equals(typeVal)) {
-            throw new RuntimeException(String.format("expected not %s", typeVal));
+    private void expectNot(Type type, TypeVal ...typeVal) {
+        if (Arrays.asList(typeVal).contains(type)) {
+            throw new RuntimeException(String.format("expected not %s", Arrays.asList(typeVal)));
         }
-    }
-
-    void expectOperandType(Type type) {
-        expectNot(type, TypeVal.BOOL);
-        expectNot(type, TypeVal.VOID);
-        expectNot(type, TypeVal.STRING);
     }
 
     @Override
     public void visit(Variable variable) {
         variable.getExpr().accept(this);
-        expectNot(variable.getType(), TypeVal.VOID);
-        expectNot(variable.getType(), TypeVal.BOOL);
+        expectNot(variable.getType(), TypeVal.VOID, TypeVal.BOOL);
     }
 
     @Override
@@ -77,6 +75,23 @@ public class TypeChecker implements Visitor {
     }
 
     @Override
+    public void visit(IfNode node) {
+        node.getCond().accept(this);
+        var condType = node.getCond().getType();
+        expect(condType, TypeVal.BOOL, TypeVal.UINT, TypeVal.DOUBLE);
+        node.getThenBody().accept(this);
+        node.getElseBody().ifPresent(x -> x.accept(this));
+    }
+
+    @Override
+    public void visit(WhileNode node) {
+        node.getCond().accept(this);
+        var condType = node.getCond().getType();
+        expect(condType, TypeVal.BOOL, TypeVal.UINT, TypeVal.DOUBLE);
+        node.getBody().accept(this);
+    }
+
+    @Override
     public void visit(AssignNode node) {
         node.getLhs().accept(this);
         node.getRhs().accept(this);
@@ -90,8 +105,8 @@ public class TypeChecker implements Visitor {
         node.getRight().accept(this);
         var lhs = node.getLeft().getType();
         var rhs = node.getRight().getType();
-        expectOperandType(lhs);
-        expectOperandType(rhs);
+        expectNot(lhs, TypeVal.BOOL, TypeVal.VOID, TypeVal.STRING);
+        expectNot(rhs, TypeVal.BOOL, TypeVal.VOID, TypeVal.STRING);
         expectEquals(lhs, rhs);
 
         node.setType(switch (node.getOp()) {

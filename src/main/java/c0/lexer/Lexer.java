@@ -12,8 +12,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 public class Lexer extends RichIterator<Token> {
-    CharIterator charIter;
-    LinkedHashMap<Predicate<Character>, Supplier<Token>> actions;
+    private final CharIterator charIter;
+    private final LinkedHashMap<Predicate<Character>, Supplier<Token>> actions;
 
     public Lexer(CharIterator charIter) {
         this.charIter = charIter;
@@ -41,22 +41,22 @@ public class Lexer extends RichIterator<Token> {
         throw new RuntimeException("unrecognized character");
     }
 
-    Token skipSpace() {
+    private Token skipSpace() {
         while (charIter.check(Character::isWhitespace)) {
             charIter.next();
         }
         return getNext().orElseThrow(NonReadableChannelException::new);
     }
 
-    boolean isUnderlineOrLetter(Character ch) {
+    private boolean isUnderlineOrLetter(Character ch) {
         return Character.isLetter(ch) || ch == '_';
     }
 
-    boolean isUnderlineOrLetterOrDigit(Character ch) {
+    private boolean isUnderlineOrLetterOrDigit(Character ch) {
         return Character.isDigit(ch) || isUnderlineOrLetter(ch);
     }
 
-    Token lexIdentOrKeyword() {
+    private Token lexIdentOrKeyword() {
         var sb = new StringBuilder();
         while (charIter.check(this::isUnderlineOrLetterOrDigit)) {
             sb.append(charIter.next());
@@ -77,7 +77,7 @@ public class Lexer extends RichIterator<Token> {
         };
     }
 
-    Token lexUIntOrDouble() {
+    private Token lexUIntOrDouble() {
         var sb = new StringBuilder();
         while (charIter.check(Character::isDigit)) {
             sb.append(charIter.next());
@@ -110,7 +110,7 @@ public class Lexer extends RichIterator<Token> {
         return new Token(TokenType.UINT_LITERAL, sb.toString());
     }
 
-    Optional<Character> lexSpecialOrLiteralChar() {
+    private Optional<Character> lexSpecialOrLiteralChar() {
         if (!charIter.hasNext()) {
             return Optional.empty();
         }
@@ -134,7 +134,7 @@ public class Lexer extends RichIterator<Token> {
         return Optional.of(charIter.next());
     }
 
-    Token lexString() {
+    private Token lexString() {
         var sb = new StringBuilder();
         charIter.expect('"');
         while (true) {
@@ -148,7 +148,7 @@ public class Lexer extends RichIterator<Token> {
         return new Token(TokenType.STRING_LITERAL, sb.toString());
     }
 
-    Token lexChar() {
+    private Token lexChar() {
         charIter.expect('\'');
         var op = lexSpecialOrLiteralChar();
         var value = op.orElseThrow(() -> new RuntimeException("char literal must not be empty"));
@@ -156,11 +156,11 @@ public class Lexer extends RichIterator<Token> {
         return new Token(TokenType.CHAR_LITERAL, Integer.valueOf((int) value).toString());
     }
 
-    boolean isOperator(char ch) {
+    private boolean isOperator(char ch) {
         return List.of('+', '-', '*', '/', '=', '!', '<', '>', '(', ')', '{', '}', ',', ':', ';').contains(ch);
     }
 
-    Token lexOperator() {
+    private Token lexOperator() {
         return switch (charIter.next()) {
             case '+' -> new Token(TokenType.PLUS);
             case '-' -> {

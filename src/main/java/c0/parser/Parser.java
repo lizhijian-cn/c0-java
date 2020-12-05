@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Optional;
 
 public class Parser {
-    Lexer lexer;
-    ExprParser exprParser;
-    VariableChecker checker;
+    private final Lexer lexer;
+    private final ExprParser exprParser;
+    private final VariableChecker checker;
 
     public Parser(Lexer lexer) {
         this.lexer = lexer;
@@ -34,7 +34,7 @@ public class Parser {
         return parseProgram();
     }
 
-    AST parseProgram() {
+    private AST parseProgram() {
         checker.push();
         boolean exit = false;
         while (!exit) {
@@ -53,12 +53,10 @@ public class Parser {
         for (var entity : scope.getEntities().values()) {
             if (entity instanceof Variable variable) {
                 variable.setVarType(Variable.VariableTypeOp.GLOBAL);
-//                variable.setOffset(globals.size());
                 globals.add(variable);
             }
             if (entity instanceof Function function) {
                 functions.add(function);
-//                function.setOffset(functions.size());
             }
             if (entity instanceof StringVariable string) {
                 strings.add(string);
@@ -72,11 +70,10 @@ public class Parser {
     }
 
     // TODO: now only parse main function
-    Function parseFunction() {
+    private Function parseFunction() {
         checker.push();
         lexer.expect(TokenType.FN);
         var name = lexer.expect(TokenType.IDENT).getValue();
-//        var params = new ArrayList<Variable>();
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
             checker.add(parseParam());
@@ -104,7 +101,7 @@ public class Parser {
         return new Function(name, type, params, locals, blockStmt);
     }
 
-    Variable parseParam() {
+    private Variable parseParam() {
         boolean isConst = false;
         if (lexer.test(TokenType.CONST)) {
             isConst = true;
@@ -117,7 +114,7 @@ public class Parser {
         return variable;
     }
 
-    Variable parseVariable() {
+    private Variable parseVariable() {
         boolean isConst;
         String name;
         Type type;
@@ -148,11 +145,11 @@ public class Parser {
         return new Variable(name, type, expr, isConst);
     }
 
-    ExprNode parseExpr() {
+    private ExprNode parseExpr() {
         return exprParser.parse();
     }
 
-    BlockNode parseBlockStmt() {
+    private BlockNode parseBlockStmt() {
         checker.push();
         lexer.expect(TokenType.L_BRACE);
 
@@ -170,6 +167,31 @@ public class Parser {
                     stmts.add(blockStmt);
                 }
                 case RETURN -> stmts.add(parseReturnStmt());
+                case IF -> {
+                    lexer.next();
+                    var cond = parseExpr();
+                    var thenBody = parseBlockStmt();
+                    Optional<BlockNode> elseBody = Optional.empty();
+                    if (lexer.test(TokenType.ELSE)) {
+                        elseBody = Optional.of(parseBlockStmt());
+                    }
+                    stmts.add(new IfNode(cond, thenBody, elseBody));
+                }
+                case WHILE -> {
+                    lexer.next();
+                    var cond = parseExpr();
+                    var body = parseBlockStmt();
+                    stmts.add(new WhileNode(cond, body));
+                }
+                case BREAK -> {
+                    lexer.next();
+                    lexer.expect(TokenType.SEMICOLON);
+                    stmts.add(new BreakNode());
+                }
+                case CONTINUE -> {
+                    lexer.next();
+                    lexer.expect(TokenType.SEMICOLON);
+                }
                 case R_BRACE, EOF -> exit = true;
                 default -> stmts.add(parseExprStmt());
             }
@@ -183,7 +205,7 @@ public class Parser {
         return new BlockNode(stmts);
     }
 
-    ReturnNode parseReturnStmt() {
+    private ReturnNode parseReturnStmt() {
         lexer.expect(TokenType.RETURN);
         ExprNode returnValue = null;
         if (!lexer.test(TokenType.SEMICOLON)) {
@@ -194,11 +216,9 @@ public class Parser {
     }
 
     // TODO try to parse expr statement, if success, drop it, otherwise, throw a exception
-    ExprStmtNode parseExprStmt() {
+    private ExprStmtNode parseExprStmt() {
         ExprNode expr = parseExpr();
         lexer.expect(TokenType.SEMICOLON);
         return new ExprStmtNode(expr);
     }
-
-    // TODO if & while & break & continue statement
 }

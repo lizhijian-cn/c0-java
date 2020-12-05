@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Optional;
 
 @Getter
-public class Scope {
+class Scope {
     Map<String, Entity> entities = new LinkedHashMap<>();
 
-    public void add(Entity entity) {
+    void add(Entity entity) {
         var name = entity.getName();
         if (entities.containsKey(name)) {
             throw new RuntimeException(String.format("%s is already defined in the scope", name));
@@ -19,7 +19,7 @@ public class Scope {
         entities.put(name, entity);
     }
 
-    public Optional<Entity> get(String name) {
+    Optional<Entity> get(String name) {
         return Optional.ofNullable(entities.get(name));
     }
 }

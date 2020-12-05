@@ -4,26 +4,25 @@ import c0.entity.Entity;
 import c0.entity.Function;
 import c0.entity.StringVariable;
 import c0.entity.Variable;
-import c0.parser.scope.Scope;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
-public class VariableChecker {
+class VariableChecker {
     Deque<Scope> scopeStack;
 
-    public VariableChecker() {
+    VariableChecker() {
         this.scopeStack = new LinkedList<>();
     }
 
-    Scope top() {
+    private Scope top() {
         if (scopeStack.isEmpty()) {
             throw new RuntimeException("scope stack is empty");
         }
         return scopeStack.peekLast();
     }
 
-    Scope current() {
+    private Scope current() {
         if (scopeStack.isEmpty()) {
             throw new RuntimeException("scope stack is empty");
         }
