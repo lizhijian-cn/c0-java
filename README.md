@@ -27,6 +27,8 @@ navm $asm
 # TODO
 * control flow check
 * support DaclNode
+* location
+* error handler
 
 # Grade
 57/57 passed
