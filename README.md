@@ -1,5 +1,5 @@
 # C0-java
-a c0 compiler. c0 grammar [here](https://c0.karenia.cc/c0/c0.html)
+c0 编译器. c0 文法请参见 [here](https://c0.karenia.cc/c0/c0.html)
 
 # Environment
 * JDK15 (need to enable preview feature)
@@ -11,7 +11,7 @@ gradle build
 java --enable-preview -jar build/libs/c0-java.jar $input -o $asm
 ```
 
-you may need a [vm](https://github.com/BUAA-SE-Compiling/natrium) to run a `.o0` file
+可以使用助教提供的虚拟机 [vm](https://github.com/BUAA-SE-Compiling/natrium)
 ```shell script
 git clone git@github.com:BUAA-SE-Compiling/natrium.git
 cd natrium
@@ -19,7 +19,7 @@ cargo build
 cd target/debug/
 export PATH=$PATH:$PWD
 ```
-now you can use navm to run assembly file
+现在可以运行编译器生成的二进制文件了
 ```
 navm $asm
 ```
