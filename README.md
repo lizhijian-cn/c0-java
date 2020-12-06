@@ -1,8 +1,8 @@
-# c0-java
+# C0-java
 a c0 compiler. c0 grammar [here](https://c0.karenia.cc/c0/c0.html)
 
 # Environment
-* JDK15 (need enable preview feature)
+* JDK15 (need to enable preview feature)
 * Gradle 6.7.1
 
 # Usage
