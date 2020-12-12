@@ -29,4 +29,5 @@ sudo chmod +x navm
 
 # Grade
 57/57 passed
+
 ![](https://raw.githubusercontent.com/lizhijian-cn/static/master/img/20201213024243.png)
