@@ -6,6 +6,7 @@ import lombok.Setter;
 
 @Getter
 public abstract class Entity extends AbstractNode {
+    @Setter
     String name;
     @Setter
     int offset;

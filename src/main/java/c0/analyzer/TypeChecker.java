@@ -40,6 +40,7 @@ public class TypeChecker implements Visitor {
     @Override
     public void visit(Variable variable) {
         variable.getExpr().accept(this);
+        expectEquals(variable.getType(), variable.getExpr().getType());
         expectNot(variable.getType(), TypeVal.VOID, TypeVal.BOOL);
     }
 

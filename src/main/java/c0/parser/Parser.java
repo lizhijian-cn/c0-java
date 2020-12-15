@@ -1,12 +1,9 @@
 package c0.parser;
 
 import c0.ast.AST;
-import c0.ast.expr.ExprNode;
-import c0.ast.expr.FunctionCallNode;
-import c0.ast.expr.LiteralNode;
+import c0.ast.expr.*;
 import c0.ast.stmt.*;
 import c0.entity.Function;
-import c0.entity.StringVariable;
 import c0.entity.Variable;
 import c0.error.UnreachableException;
 import c0.lexer.Lexer;
@@ -14,6 +11,7 @@ import c0.lexer.TokenType;
 import c0.type.Type;
 import c0.type.TypeVal;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -39,7 +37,9 @@ public class Parser {
         boolean exit = false;
         while (!exit) {
             switch (lexer.peek().getTokenType()) {
-                case FN -> checker.add(parseFunction());
+                // add undefined function to scope before parsing body of function to support recursion
+                // case FN -> checker.add(parseFunction());
+                case FN -> parseFunction();
                 case LET, CONST -> checker.add(parseVariable());
                 default -> exit = true;
             }
@@ -66,11 +66,17 @@ public class Parser {
         return new AST(functions, globals, strings);
     }
 
-    // TODO: now only parse main function
-    private Function parseFunction() {
-        checker.push();
+    /**
+     *
+     */
+    private void parseFunction() {
         lexer.expect(TokenType.FN);
         var name = lexer.expect(TokenType.IDENT).getValue();
+        var function = new Function(name);
+        checker.add(function);
+
+        checker.push();
+
         lexer.expect(TokenType.L_PAREN);
         if (!lexer.check(TokenType.R_PAREN)) {
             checker.add(parseParam());
@@ -95,7 +101,7 @@ public class Parser {
                 }
             }
         }
-        return new Function(name, type, params, locals, blockStmt);
+        checker.getFunction(name).set(type, params, locals, blockStmt);
     }
 
     private Variable parseParam() {
@@ -158,22 +164,26 @@ public class Parser {
                     lexer.next();
                     stmts.add(new EmptyNode());
                 }
-                case LET, CONST -> checker.add(parseVariable());
-                case L_PAREN -> {
+                case LET, CONST -> {
+                    // must reassign when a local variable declared
+                    // while 1 {
+                    //     let i: int = a + b;
+                    //     // change a or b, so i need to be changed every loop
+                    // }
+                    // TODO: its better to create a new node named DeclNode
+                    var variable = parseVariable();
+                    checker.add(variable);
+                    stmts.add(new ExprStmtNode(
+                            new AssignNode(
+                                    new VariableNode(variable.getName(), variable),
+                                    variable.getExpr())));
+                }
+                case L_BRACE -> {
                     var blockStmt = parseBlockStmt();
                     stmts.add(blockStmt);
                 }
                 case RETURN -> stmts.add(parseReturnStmt());
-                case IF -> {
-                    lexer.next();
-                    var cond = parseExpr();
-                    var thenBody = parseBlockStmt();
-                    Optional<BlockNode> elseBody = Optional.empty();
-                    if (lexer.test(TokenType.ELSE)) {
-                        elseBody = Optional.of(parseBlockStmt());
-                    }
-                    stmts.add(new IfNode(cond, thenBody, elseBody));
-                }
+                case IF -> stmts.add(parseIfStmt());
                 case WHILE -> {
                     lexer.next();
                     var cond = parseExpr();
@@ -188,6 +198,7 @@ public class Parser {
                 case CONTINUE -> {
                     lexer.next();
                     lexer.expect(TokenType.SEMICOLON);
+                    stmts.add(new ContinueNode());
                 }
                 case R_BRACE, EOF -> exit = true;
                 default -> stmts.add(parseExprStmt());
@@ -197,6 +208,7 @@ public class Parser {
 
         var scope = checker.pop();
         for (var entity : scope.getEntities().values()) {
+            entity.setName(LocalTime.now().toString());
             checker.add(entity);
         }
         return new BlockNode(stmts);
@@ -217,5 +229,20 @@ public class Parser {
         ExprNode expr = parseExpr();
         lexer.expect(TokenType.SEMICOLON);
         return new ExprStmtNode(expr);
+    }
+
+    private IfNode parseIfStmt() {
+        lexer.expect(TokenType.IF);
+        var cond = parseExpr();
+        var thenBody = parseBlockStmt();
+        Optional<StmtNode> elseBody = Optional.empty();
+        if (lexer.test(TokenType.ELSE)) {
+            if (lexer.check(TokenType.IF)) {
+                elseBody = Optional.of(parseIfStmt());
+            } else {
+                elseBody = Optional.of(parseBlockStmt());
+            }
+        }
+        return new IfNode(cond, thenBody, elseBody);
     }
 }

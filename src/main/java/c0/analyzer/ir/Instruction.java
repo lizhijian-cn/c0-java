@@ -23,7 +23,7 @@ enum Instruction {
     MULF(0X26),
     DIVF(0X27),
     NOT(0X2E),
-    CMPI(0X31),
+    CMPI(0X30),
     CMPF(0X32),
     NEGI(0X34),
     NEGF(0X35),

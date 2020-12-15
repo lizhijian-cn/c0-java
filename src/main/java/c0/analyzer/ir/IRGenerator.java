@@ -56,11 +56,12 @@ public class IRGenerator implements Visitor {
     @Override
     public void visit(Function function) {
         s.writeInt(function.getOffset() + globalCount + stringCount);
-        s.writeInt(function.getReturnType().equals(TypeVal.VOID) ? 0 : 1);
+        int returnCount = function.getReturnType().equals(TypeVal.VOID) ? 0 : 1;
+        s.writeInt(returnCount);
         int paramCount = function.getParams().size();
         int localCount = function.getLocals().size();
         for (int i = 0; i < paramCount; i++) {
-            function.getParams().get(i).setOffset(i + 1);
+            function.getParams().get(i).setOffset(i + returnCount);
         }
         for (int i = 0; i < localCount; i++) {
             function.getLocals().get(i).setOffset(i);
@@ -124,7 +125,7 @@ public class IRGenerator implements Visitor {
         node.getLeft().accept(this);
         node.getRight().accept(this);
 
-        if (node.getType().equals(TypeVal.UINT)) {
+        if (node.getLeft().getType().equals(TypeVal.UINT)) {
             switch (node.getOp()) {
                 case PLUS -> flow.write(Instruction.ADDI);
                 case MINUS -> flow.write(Instruction.SUBI);
