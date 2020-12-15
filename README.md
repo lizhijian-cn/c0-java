@@ -3,7 +3,6 @@ c0 编译器, 具体文法请参见 [here](https://c0.karenia.cc/c0/c0.html)
 
 # Environment
 * JDK15 (need to enable preview feature)
-* Gradle 6.7.1
 
 推荐使用[sdkman](https://sdkman.io/)来管理、下载相关的SDK
 
