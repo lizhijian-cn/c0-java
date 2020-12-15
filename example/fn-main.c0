@@ -1,0 +1,12 @@
+fn main() -> int {
+    putstr("the sum 1 to 100 equals to:\n");
+    let res: int = 0;
+    let count: int = 100;
+    while (count > 0) {
+        res = res + count;
+        count = count - 1;
+    }
+    putint(res);
+    putln();
+    return 0;
+}

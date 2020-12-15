@@ -12,8 +12,8 @@ c0 编译器, 具体文法请参见 [here](https://c0.karenia.cc/c0/c0.html)
 git clone https://github.com/lizhijian-cn/c0-java.git
 cd c0-java
 
-gradle build
-java --enable-preview -jar build/libs/c0-java.jar $input -o $asm
+./gradlew build
+java --enable-preview -jar build/libs/c0-java.jar example/fn-main.c0 -o example/fn-main.o0
 ```
 
 可以使用助教提供的虚拟机 [vm](https://github.com/BUAA-SE-Compiling/natrium/releases)
@@ -23,8 +23,12 @@ mv navm-linux-amd64-musl navm
 sudo chmod +x navm
 
 # 现在可以运行编译器生成的二进制文件了
-./navm $asm
+./navm example/fn-main.o0
+
+# the sum 1 to 50 equals to:
+# 5050
 ```
+
 
 # TODO
 * control flow check
