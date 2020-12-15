@@ -13,21 +13,12 @@ cd c0-java
 
 ./gradlew build
 java --enable-preview -jar build/libs/c0-java.jar example/fn-main.c0 -o example/fn-main.o0
-```
 
-可以使用助教提供的虚拟机 [vm](https://github.com/BUAA-SE-Compiling/natrium/releases)
-```sh
-wget https://github.com/BUAA-SE-Compiling/natrium/releases/download/v0.1.3/navm-linux-amd64-musl
-mv navm-linux-amd64-musl navm
-sudo chmod +x navm
-
-# 现在可以运行编译器生成的二进制文件了
 ./navm example/fn-main.o0
-
-# the sum 1 to 50 equals to:
+# the sum from 1 to 50 equals to:
 # 5050
 ```
-
+其中虚拟机[navm](https://github.com/BUAA-SE-Compiling/natrium)是助教提供的
 
 # TODO
 * control flow check
