@@ -1,5 +1,5 @@
 fn main() -> int {
-    putstr("the sum 1 to 100 equals to:\n");
+    putstr("the sum from 1 to 100 equals to:\n");
     let res: int = 0;
     let count: int = 100;
     while (count > 0) {
